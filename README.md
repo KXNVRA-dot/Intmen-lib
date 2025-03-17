@@ -204,7 +204,7 @@ buttonHandler.setHandler(async (interaction) => {
 
 ## 🧰 Advanced Usage
 
-See the [examples directory](https://github.com/KXNVRA-dot/Intmen-lib/tree/main/examples) for more advanced usage patterns.
+See the [examples directory](https://github.com/KXNVRA-dot/Intmen-lib/tree/master/examples) for more advanced usage patterns.
 
 ## 🤝 Contributing
 
