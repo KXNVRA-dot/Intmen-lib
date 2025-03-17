@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Thank you for your interest in improving Discord-Intmen! This guide will help you set up the project for development and prepare your changes for submission.
+Thank you for your interest in improving Intmen-lib! This guide will help you set up the project for development and prepare your changes for submission.
 
 ## Getting Started
 
@@ -56,7 +56,7 @@ npm test
 
 ## Semantic Versioning
 
-Discord-Intmen follows [semantic versioning](https://semver.org/). Please consider this when proposing changes:
+Intmen-lib follows [semantic versioning](https://semver.org/). Please consider this when proposing changes:
 
 - **Patch (1.0.x)**: backwards-compatible bug fixes
 - **Minor (1.x.0)**: backwards-compatible new features

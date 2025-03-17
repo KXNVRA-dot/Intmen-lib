@@ -1,9 +1,9 @@
-# Discord-Intmen
+# Intmen-lib
 
 <div align="center">
 
-![Discord-Intmen](https://img.shields.io/badge/Discord-Intmen-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.0.0-blue?style=flat-square)](https://www.npmjs.com/package/discord-intmen)
+![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
+[![npm version](https://img.shields.io/badge/npm-1.0.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
@@ -26,20 +26,20 @@ A specialized library for managing interactive elements of Discord bots, includi
 
 ```bash
 # Using npm
-npm install discord-intmen
+npm install intmen-lib
 
 # Using yarn
-yarn add discord-intmen
+yarn add intmen-lib
 
 # Using pnpm
-pnpm add discord-intmen
+pnpm add intmen-lib
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
 import { Client, GatewayIntentBits } from 'discord.js';
-import { InteractionManager, SlashCommandBuilder } from 'discord-intmen';
+import { InteractionManager, SlashCommandBuilder } from 'intmen-lib';
 
 // Create Discord client
 const client = new Client({ 
@@ -98,7 +98,7 @@ manager.registerCommand(userCommand);
 #### Buttons
 
 ```typescript
-import { ButtonBuilder, ButtonStyle } from 'discord-intmen';
+import { ButtonBuilder, ButtonStyle } from 'intmen-lib';
 
 // Create a styled button
 const button = new ButtonBuilder()
@@ -130,7 +130,7 @@ await interaction.reply({
 #### Select Menus
 
 ```typescript
-import { SelectMenuBuilder } from 'discord-intmen';
+import { SelectMenuBuilder } from 'intmen-lib';
 
 // Create a select menu with options
 const roleMenu = new SelectMenuBuilder()
@@ -164,7 +164,7 @@ manager.registerSelectMenu(roleMenu);
 #### Modal Forms
 
 ```typescript
-import { ModalBuilder, ModalInputStyle } from 'discord-intmen';
+import { ModalBuilder, ModalInputStyle } from 'intmen-lib';
 
 // Create a modal form
 const feedbackModal = new ModalBuilder()
@@ -204,7 +204,7 @@ buttonHandler.setHandler(async (interaction) => {
 
 ## 🧰 Advanced Usage
 
-See the [examples directory](https://github.com/KXNVRA-dot/Intmen-lib/tree/master/examples) for more advanced usage patterns.
+See the [examples directory](https://github.com/KXNVRA-dot/Intmen-lib/tree/main/examples) for more advanced usage patterns.
 
 ## 🤝 Contributing
 

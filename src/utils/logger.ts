@@ -10,7 +10,7 @@ export class Logger {
    * @param prefix Prefix for all messages
    * @param debug Whether debug mode is enabled
    */
-  constructor(prefix: string = 'Discord-Intmen', debug: boolean = false) {
+  constructor(prefix: string = 'Intmen-lib', debug: boolean = false) {
     this.prefix = prefix;
     this.isDebug = debug;
   }

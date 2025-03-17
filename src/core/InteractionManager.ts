@@ -50,7 +50,7 @@ export class InteractionManager {
       debug: false,
       ...options
     };
-    this.logger = new Logger('Discord-Intmen', this.options.debug);
+    this.logger = new Logger('Intmen-lib', this.options.debug);
     this.interactions = new Map<string, RegisterableInteraction>();
     this.rest = new REST({ version: '10' }).setToken(this.client.token || '');
 
