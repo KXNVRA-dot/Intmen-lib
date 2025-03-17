@@ -1,7 +1,7 @@
 {
   "name": "discord-intmen",
   "version": "1.0.0",
-  "description": "Узкоспециализированная библиотека для управления взаимодействиями Discord ботов",
+  "description": "A specialized library for managing interactive elements of Discord bots",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
