@@ -204,7 +204,7 @@ buttonHandler.setHandler(async (interaction) => {
 
 ## 🧰 Advanced Usage
 
-See the [examples directory](https://github.com/yourusername/discord-intmen/tree/main/examples) for more advanced usage patterns.
+See the [examples directory](https://github.com/KXNVRA-dot/discord-intmen/tree/main/examples) for more advanced usage patterns.
 
 ## 🤝 Contributing
 
