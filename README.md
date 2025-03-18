@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.0.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
+[![npm version](https://img.shields.io/badge/npm-1.0.1-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
