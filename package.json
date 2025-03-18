@@ -1,12 +1,14 @@
 {
   "name": "intmen-lib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A specialized library for managing interactive elements of Discord bots",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "prepublishOnly": "npm run build"
   },
