@@ -1,6 +1,6 @@
 {
   "name": "intmen-lib",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A specialized library for managing interactive elements of Discord bots",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
