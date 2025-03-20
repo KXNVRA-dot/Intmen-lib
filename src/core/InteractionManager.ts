@@ -9,7 +9,6 @@ import {
   AutocompleteInteraction,
   REST,
   Routes,
-  RouteBases,
   RESTPostAPIApplicationCommandsJSONBody
 } from 'discord.js';
 
@@ -108,7 +107,11 @@ export class InteractionManager {
 
     try {
       if (command.type === InteractionType.COMMAND || command.type === InteractionType.CONTEXT_MENU) {
-        await command.handler(interaction as any);
+        if (command.type === InteractionType.COMMAND && interaction.isCommand()) {
+          await (command as Command).handler(interaction);
+        } else if (command.type === InteractionType.CONTEXT_MENU && interaction.isContextMenuCommand()) {
+          await (command as ContextMenu).handler(interaction);
+        }
       }
     } catch (error) {
       this.logger.error(`Error executing command ${interaction.commandName}`, error);
