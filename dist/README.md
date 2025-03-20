@@ -1,215 +1,80 @@
-# Intmen-lib
+# Testing Intmen-lib
 
-<div align="center">
+This directory contains tests for the Intmen-lib library. The tests are written using Jest and TypeScript.
 
-![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.0.3-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
+## Running Tests
 
-A specialized library for managing interactive elements of Discord bots, including slash commands, buttons, select menus, and modals.
-
-</div>
-
-## ✨ Features
-
-- 🚀 **Simple API** - Intuitive interface for managing Discord interactions
-- 🔒 **Type-Safe** - Built with TypeScript for robust type checking
-- 📦 **Complete** - Supports all Discord interaction types: slash commands, context menus, buttons, select menus, and modals
-- 🧩 **Modular** - Flexible architecture for clean code organization
-- ⚡ **Builder Pattern** - Fluent builders for easy creation of interactive elements
-- 🛡️ **Error Handling** - Comprehensive error management
-- 📘 **Well Documented** - Clear and concise documentation
-
-## 📥 Installation
+To run the tests, use the following commands:
 
 ```bash
-# Using npm
-npm install intmen-lib
+# Run all tests
+npm test
 
-# Using yarn
-yarn add intmen-lib
+# Run tests with watch mode (automatically rerun when files change)
+npm run test:watch
 
-# Using pnpm
-pnpm add intmen-lib
+# Run tests with coverage report
+npm run test:coverage
 ```
 
-## 🚀 Quick Start
+## Test Structure
+
+The tests follow the same structure as the source code:
+
+- `tests/core/` - Tests for core classes and managers
+  - `tests/core/builders/` - Tests for builder classes
+- `tests/utils/` - Tests for utility classes
+- `tests/setup.ts` - Global test setup and mocks
+
+## Writing Tests
+
+### Basic Test Structure
 
 ```typescript
-import { Client, GatewayIntentBits } from 'discord.js';
-import { InteractionManager, SlashCommandBuilder } from 'intmen-lib';
+import { YourClass } from '../../src/path/to/your/class';
 
-// Create Discord client
-const client = new Client({ 
-  intents: [GatewayIntentBits.Guilds] 
-});
+describe('YourClass', () => {
+  // Optional setup before each test
+  beforeEach(() => {
+    // Setup code
+  });
 
-// Create interaction manager
-const manager = new InteractionManager(client);
+  // Optional teardown after each test
+  afterEach(() => {
+    // Cleanup code
+  });
 
-// Register slash command
-const pingCommand = new SlashCommandBuilder()
-  .setName('ping')
-  .setDescription('Check bot latency')
-  .setHandler(async (interaction) => {
-    const sent = await interaction.reply({ 
-      content: '📡 Pinging...', 
-      fetchReply: true 
-    });
+  it('should do something specific', () => {
+    // Arrange - set up test data
+    const instance = new YourClass();
     
-    const latency = sent.createdTimestamp - interaction.createdTimestamp;
-    await interaction.editReply(`📡 Pong! Latency: ${latency}ms`);
-  });
-
-// Add command to manager
-manager.registerCommand(pingCommand);
-
-// Login
-client.login('YOUR_TOKEN_HERE');
-```
-
-## 📖 Documentation
-
-### Interactive Elements
-
-#### Slash Commands
-
-```typescript
-// Create a command with options
-const userCommand = new SlashCommandBuilder()
-  .setName('user')
-  .setDescription('Get information about a user')
-  .addUserOption(option => 
-    option
-      .setName('target')
-      .setDescription('Target user')
-      .setRequired(true)
-  )
-  .setHandler(async (interaction) => {
-    const user = interaction.options.getUser('target');
-    await interaction.reply(`Username: ${user.username}`);
-  });
-
-manager.registerCommand(userCommand);
-```
-
-#### Buttons
-
-```typescript
-import { ButtonBuilder, ButtonStyle } from 'intmen-lib';
-
-// Create a styled button
-const button = new ButtonBuilder()
-  .setCustomId('confirm_button')
-  .setLabel('Confirm')
-  .setStyle(ButtonStyle.SUCCESS)
-  .setEmoji('✅')
-  .setHandler(async (interaction) => {
-    await interaction.reply({ 
-      content: 'Action confirmed!', 
-      ephemeral: true 
-    });
-  });
-
-manager.registerButton(button);
-
-// In your command handler
-await interaction.reply({
-  content: 'Please confirm this action',
-  components: [
-    {
-      type: 1, // ActionRow
-      components: [button.toJSON()]
-    }
-  ]
-});
-```
-
-#### Select Menus
-
-```typescript
-import { SelectMenuBuilder } from 'intmen-lib';
-
-// Create a select menu with options
-const roleMenu = new SelectMenuBuilder()
-  .setCustomId('role_menu')
-  .setPlaceholder('Select your role')
-  .addOptions([
-    { 
-      label: 'Developer', 
-      value: 'dev', 
-      description: 'Software developer', 
-      emoji: '💻' 
-    },
-    { 
-      label: 'Designer', 
-      value: 'design', 
-      description: 'UI/UX designer',
-      emoji: '🎨' 
-    }
-  ])
-  .setHandler(async (interaction) => {
-    const roles = interaction.values;
-    await interaction.reply({
-      content: `You selected: ${roles.join(', ')}`,
-      ephemeral: true
-    });
-  });
-
-manager.registerSelectMenu(roleMenu);
-```
-
-#### Modal Forms
-
-```typescript
-import { ModalBuilder, ModalInputStyle } from 'intmen-lib';
-
-// Create a modal form
-const feedbackModal = new ModalBuilder()
-  .setCustomId('feedback_form')
-  .setTitle('Submit Feedback')
-  .addTextInput({
-    customId: 'feedback_title',
-    label: 'Title',
-    style: ModalInputStyle.SHORT,
-    required: true,
-    placeholder: 'Brief summary'
-  })
-  .addTextInput({
-    customId: 'feedback_description',
-    label: 'Description',
-    style: ModalInputStyle.PARAGRAPH,
-    required: true,
-    placeholder: 'Detailed feedback'
-  })
-  .setHandler(async (interaction) => {
-    const title = interaction.fields.getTextInputValue('feedback_title');
-    const description = interaction.fields.getTextInputValue('feedback_description');
+    // Act - perform the action being tested
+    const result = instance.someMethod();
     
-    await interaction.reply({
-      content: `Feedback received!\nTitle: ${title}\nDescription: ${description}`,
-      ephemeral: true
-    });
+    // Assert - verify the expected outcome
+    expect(result).toBe(expectedValue);
   });
-
-manager.registerModal(feedbackModal);
-
-// Show the modal in a button handler
-buttonHandler.setHandler(async (interaction) => {
-  await interaction.showModal(feedbackModal.toJSON());
 });
 ```
 
-## 🧰 Advanced Usage
+### Mocking Discord.js
 
-See the [examples directory](https://github.com/KXNVRA-dot/Intmen-lib/tree/main/examples) for more advanced usage patterns.
+The `tests/setup.ts` file contains mocks for Discord.js classes and methods. If you need to use additional Discord.js functionality in your tests, add it to the mock in `setup.ts`.
 
-## 🤝 Contributing
+### Testing Guidelines
 
-Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
+1. Each test should cover a single functionality or aspect
+2. Use descriptive test names that explain what is being tested
+3. Follow the Arrange-Act-Assert pattern
+4. Mock external dependencies and services
+5. Test edge cases and error conditions
 
-## 📄 License
+## Coverage
 
-[MIT](LICENSE) © KXNVRA 
+Run `npm run test:coverage` to generate a coverage report. This will show which parts of the code are covered by tests and which are not.
+
+The coverage report can be found in the `coverage/` directory after running the coverage command.
+
+## Continuous Integration
+
+These tests are automatically run in the CI pipeline to ensure that changes do not break existing functionality. 
