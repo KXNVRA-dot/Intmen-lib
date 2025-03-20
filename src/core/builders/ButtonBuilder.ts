@@ -1,6 +1,19 @@
 import { Button, ButtonHandler, ButtonStyle, InteractionType } from '../../types';
 
 /**
+ * Interface representing the Discord API button data
+ */
+interface DiscordButtonData {
+  type: number;
+  style: ButtonStyle;
+  label: string;
+  disabled: boolean;
+  url?: string;
+  custom_id?: string;
+  emoji?: { name: string };
+}
+
+/**
  * Builder for creating buttons
  */
 export class ButtonBuilder {
@@ -112,8 +125,8 @@ export class ButtonBuilder {
    * Creates a data object to send to Discord API
    * @returns Button data object for Discord API
    */
-  public toJSON() {
-    const json: any = {
+  public toJSON(): DiscordButtonData {
+    const json: DiscordButtonData = {
       type: 2, // Button type
       style: this._style,
       label: this._label,
