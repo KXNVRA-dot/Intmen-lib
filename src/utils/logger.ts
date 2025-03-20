@@ -36,7 +36,7 @@ export class Logger {
    * @param message Error message
    * @param error Error object (optional)
    */
-  public error(message: string, error?: any): void {
+  public error(message: string, error?: Error | unknown): void {
     console.error(`[${this.prefix}] [ERROR] ${message}`);
     if (error) {
       console.error(error);
