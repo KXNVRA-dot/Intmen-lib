@@ -1,6 +1,5 @@
 import { 
   ButtonInteraction, 
-  Client, 
   CommandInteraction as DiscordCommandInteraction, 
   ModalSubmitInteraction, 
   SelectMenuInteraction,
