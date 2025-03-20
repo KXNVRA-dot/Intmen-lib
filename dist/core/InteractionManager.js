@@ -75,7 +75,12 @@ class InteractionManager {
         }
         try {
             if (command.type === types_1.InteractionType.COMMAND || command.type === types_1.InteractionType.CONTEXT_MENU) {
-                await command.handler(interaction);
+                if (command.type === types_1.InteractionType.COMMAND && interaction.isCommand()) {
+                    await command.handler(interaction);
+                }
+                else if (command.type === types_1.InteractionType.CONTEXT_MENU && interaction.isContextMenuCommand()) {
+                    await command.handler(interaction);
+                }
             }
         }
         catch (error) {

@@ -25,7 +25,7 @@ export declare class Logger {
      * @param message Error message
      * @param error Error object (optional)
      */
-    error(message: string, error?: any): void;
+    error(message: string, error?: Error | unknown): void;
     /**
      * Displays a debug message (only if debug mode is enabled)
      * @param message Debug message
