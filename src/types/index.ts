@@ -6,7 +6,8 @@ import {
   ContextMenuCommandInteraction,
   AutocompleteInteraction,
   ApplicationCommandOptionType,
-  RESTPostAPIApplicationCommandsJSONBody
+  RESTPostAPIApplicationCommandsJSONBody,
+  Interaction
 } from 'discord.js';
 
 /**
@@ -43,6 +44,11 @@ export type ContextMenuHandler = (interaction: ContextMenuCommandInteraction) =>
  * Handler for autocomplete
  */
 export type AutocompleteHandler = (interaction: AutocompleteInteraction) => Promise<void>;
+
+/**
+ * Custom error handler for interactions
+ */
+export type ErrorHandler = (interaction: Interaction, error: Error) => Promise<void> | void;
 
 /**
  * Interaction types
@@ -121,6 +127,16 @@ export interface Autocomplete extends BaseInteraction {
 }
 
 /**
+ * Options for customizing error responses
+ */
+export interface ErrorResponseOptions {
+  /** Custom error message to show instead of default */
+  customMessage?: string;
+  /** Whether the error message should be ephemeral */
+  ephemeral?: boolean;
+}
+
+/**
  * Options for interaction manager
  */
 export interface InteractionManagerOptions {
@@ -128,6 +144,16 @@ export interface InteractionManagerOptions {
   autoRegisterEvents?: boolean;
   /** Debug mode */
   debug?: boolean;
+  /** Default error message for interaction errors */
+  defaultErrorMessage?: string;
+  /** Whether default error messages should be ephemeral */
+  defaultErrorEphemeral?: boolean;
+  /** Custom error handler for all interactions */
+  onError?: ErrorHandler;
+  /** Maximum time in ms to wait for an interaction handler to complete */
+  interactionTimeout?: number;
+  /** Bot token (useful when client token is not available at initialization) */
+  botToken?: string;
 }
 
 /**
@@ -176,4 +202,4 @@ export type CommandOption = {
     value: string | number;
   }>;
   options?: CommandOption[];
-}; 
+};
