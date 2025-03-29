@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.0.4-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
+[![npm version](https://img.shields.io/badge/npm-1.1.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
@@ -13,7 +13,7 @@ A specialized library for managing interactive elements of Discord bots, includi
 
 </div>
 
-> ⚠️ **IMPORTANT WARNING**: Version 1.0.4 is currently **UNSTABLE** and not recommended for production use. Breaking changes and bugs may be present. Please use version 1.0.3 for production environments or wait for the next stable release.
+> 🚀 **NEW VERSION 1.1.0 AVAILABLE**: Featuring enhanced error handling, improved builders, and new utility classes. This version is stable and recommended for production use.
 
 ## ✨ Features
 
@@ -25,21 +25,20 @@ A specialized library for managing interactive elements of Discord bots, includi
 - 🛡️ **Error Handling** - Comprehensive error management with proper typing
 - 🧪 **Fully Tested** - High test coverage (>93%) for reliability
 - 📘 **Well Documented** - Clear and concise documentation
+- 🔑 **Permission Utilities** - Simplify Discord permission checks with built-in utilities
+- ✅ **Validation** - Robust interaction validation with fluent API
 
 ## 📥 Installation
 
 ```bash
 # Using npm
-npm install intmen-lib@1.0.3  # Use stable version 1.0.3 for production
-
-# For testing the unstable version
-npm install intmen-lib@1.0.4  # UNSTABLE - use with caution
+npm install intmen-lib
 
 # Using yarn
-yarn add intmen-lib@1.0.3  # Stable version
+yarn add intmen-lib
 
 # Using pnpm
-pnpm add intmen-lib@1.0.3  # Stable version
+pnpm add intmen-lib
 ```
 
 ## 🚀 Quick Start
@@ -85,13 +84,15 @@ client.login('YOUR_TOKEN_HERE');
 
 ## 📖 Documentation
 
-### Known Issues in v1.0.4 (Unstable)
+### New in v1.1.0
 
-- Autocomplete interactions may cause errors in certain scenarios
-- Command registration might not work correctly with large command sets
-- TypeScript type definitions may have inconsistencies
-
-These issues are currently being fixed and will be resolved in the next stable release.
+- Enhanced error handling with customizable error responses
+- Improved SlashCommandBuilder with subcommand support
+- Added ContextMenuCommandBuilder for easier creation of context menu commands
+- New permission utilities for checking user permissions
+- Interaction validators for validating and filtering interactions
+- Improved type safety throughout the library
+- Better timeout handling for interactions
 
 ### Interactive Elements
 
@@ -116,29 +117,82 @@ const userCommand = new SlashCommandBuilder()
 manager.registerCommand(userCommand.build());
 ```
 
+#### Slash Commands with Subcommands
+
+```typescript
+// Create a command with subcommands
+const settingsCommand = new SlashCommandBuilder()
+  .setName('settings')
+  .setDescription('Manage bot settings')
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('view')
+      .setDescription('View current settings')
+  )
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('edit')
+      .setDescription('Edit a setting')
+      .addStringOption(option =>
+        option
+          .setName('setting')
+          .setDescription('Setting to edit')
+          .setRequired(true)
+      )
+      .addStringOption(option =>
+        option
+          .setName('value')
+          .setDescription('New value')
+          .setRequired(true)
+      )
+  )
+  .setHandler(async (interaction) => {
+    const subcommand = interaction.options.getSubcommand();
+    
+    if (subcommand === 'view') {
+      await interaction.reply('Here are your current settings...');
+    } else if (subcommand === 'edit') {
+      const setting = interaction.options.getString('setting');
+      const value = interaction.options.getString('value');
+      await interaction.reply(`Setting ${setting} updated to ${value}`);
+    }
+  });
+
+manager.registerCommand(settingsCommand.build());
+```
+
 #### Context Menu Commands
 
 ```typescript
-import { InteractionType } from 'intmen-lib';
+import { ContextMenuCommandBuilder } from 'intmen-lib';
 
 // Create a user context menu command
-const userContextMenu = {
-  id: 'userInfo',
-  type: InteractionType.CONTEXT_MENU,
-  data: {
-    name: 'User Info',
-    type: 2 // USER type
-  },
-  handler: async (interaction) => {
+const userInfoContextMenu = new ContextMenuCommandBuilder()
+  .setName('User Info')
+  .setUserContextMenu()
+  .setHandler(async (interaction) => {
     const user = interaction.targetUser;
     await interaction.reply({
       content: `Information about ${user.username}`,
       ephemeral: true
     });
-  }
-};
+  });
 
-manager.registerContextMenu(userContextMenu);
+manager.registerCommand(userInfoContextMenu.build());
+
+// Create a message context menu command
+const translateContextMenu = new ContextMenuCommandBuilder()
+  .setName('Translate Message')
+  .setMessageContextMenu()
+  .setHandler(async (interaction) => {
+    const message = interaction.targetMessage;
+    await interaction.reply({
+      content: `Translating: ${message.content.slice(0, 100)}...`,
+      ephemeral: true
+    });
+  });
+
+manager.registerCommand(translateContextMenu.build());
 ```
 
 #### Buttons
@@ -205,151 +259,190 @@ const roleMenu = new SelectMenuBuilder()
 manager.registerSelectMenu(roleMenu.build());
 ```
 
-#### Modal Forms
+#### Modals
 
 ```typescript
-import { ModalBuilder } from 'intmen-lib';
+import { ModalBuilder, TextInputStyle } from 'intmen-lib';
 
 // Create a modal form
 const feedbackModal = new ModalBuilder()
   .setCustomId('feedback_form')
   .setTitle('Submit Feedback')
-  .addShortTextInput('feedback_title', 'Title', {
-    required: true,
-    placeholder: 'Brief summary'
+  .addTextInput({
+    customId: 'feedback_name',
+    label: 'Your Name',
+    style: TextInputStyle.Short,
+    required: true
   })
-  .addParagraphInput('feedback_description', 'Description', {
+  .addTextInput({
+    customId: 'feedback_content',
+    label: 'Your Feedback',
+    style: TextInputStyle.Paragraph,
+    placeholder: 'Please provide your feedback here...',
     required: true,
-    placeholder: 'Detailed feedback'
+    minLength: 10,
+    maxLength: 1000
   })
   .setHandler(async (interaction) => {
-    const title = interaction.fields.getTextInputValue('feedback_title');
-    const description = interaction.fields.getTextInputValue('feedback_description');
+    const name = interaction.fields.getTextInputValue('feedback_name');
+    const feedback = interaction.fields.getTextInputValue('feedback_content');
     
     await interaction.reply({
-      content: `Feedback received!\nTitle: ${title}\nDescription: ${description}`,
+      content: `Thank you, ${name}! Your feedback has been received.`,
       ephemeral: true
     });
+    
+    // Process the feedback...
   });
 
 manager.registerModal(feedbackModal.build());
 
-// Show the modal in a button handler
-buttonHandler.setHandler(async (interaction) => {
-  await interaction.showModal(feedbackModal.toJSON());
-});
+// Show modal in a command or button handler
+await interaction.showModal(feedbackModal.toJSON());
 ```
 
-#### Autocomplete Interactions
+### New Utilities in v1.1.0
 
-> ⚠️ **Note**: Autocomplete interactions have known issues in version 1.0.4
+#### Permission Utilities
 
 ```typescript
-import { InteractionType } from 'intmen-lib';
+import { PermissionUtils, PermissionFlagsBits } from 'intmen-lib';
 
-// Create a slash command with autocomplete
-const searchCommand = new SlashCommandBuilder()
-  .setName('search')
-  .setDescription('Search for an item')
-  .addStringOption(option =>
-    option
-      .setName('query')
-      .setDescription('Search query')
-      .setRequired(true)
-      .setAutocomplete(true)
-  )
-  .setHandler(async (interaction) => {
-    const query = interaction.options.getString('query');
-    await interaction.reply(`Searching for: ${query}`);
+// In a command handler
+if (PermissionUtils.hasPermission(interaction.member, PermissionFlagsBits.ManageMessages)) {
+  // User has permission to manage messages
+  await interaction.reply('You can manage messages!');
+} else {
+  // User lacks permission
+  const missingPermissions = PermissionUtils.getMissingPermissions(
+    interaction.member, 
+    [PermissionFlagsBits.ManageMessages]
+  );
+  
+  const readableNames = PermissionUtils.getReadablePermissionNames(missingPermissions);
+  await interaction.reply({
+    content: `You lack the required permissions: ${readableNames.join(', ')}`,
+    ephemeral: true
   });
-
-// Register the autocomplete handler separately
-const searchAutocomplete = {
-  id: 'search',
-  type: InteractionType.AUTOCOMPLETE,
-  handler: async (interaction) => {
-    const input = interaction.options.getFocused().toString();
-    
-    // Filter your items based on input
-    const items = ['apple', 'banana', 'cherry', 'date'].filter(
-      item => item.startsWith(input.toLowerCase())
-    );
-    
-    // Send filtered results
-    await interaction.respond(
-      items.map(item => ({ name: item, value: item }))
-    );
-  }
-};
-
-manager.registerCommand(searchCommand.build());
-manager.registerAutocomplete(searchAutocomplete);
+}
 ```
 
-## 🧰 Advanced Usage
+#### Interaction Validators
 
-### Timeout Handling
+```typescript
+import { InteractionValidators } from 'intmen-lib';
 
-The library provides built-in timeout handling for interactions:
+// In a button handler
+if (InteractionValidators.isFromUser(interaction, originalUserId)) {
+  // Only the original user can interact with this button
+  await interaction.reply('Processing your request...');
+} else {
+  await interaction.reply({
+    content: 'This button is not for you!',
+    ephemeral: true
+  });
+}
+
+// Combine multiple conditions
+const isValid = InteractionValidators.all(interaction, [
+  // Must be in a guild
+  (int) => InteractionValidators.isInGuild(int),
+  // Must be in a specific channel
+  (int) => InteractionValidators.isInChannel(int, targetChannelId),
+  // Custom condition
+  (int) => InteractionValidators.custom(int, i => i.user.id === ownerId || i.member.roles.cache.has(adminRoleId))
+]);
+
+if (isValid) {
+  // All conditions passed
+  await interaction.reply('Command executed successfully!');
+} else {
+  await interaction.reply({
+    content: 'You cannot use this command here!',
+    ephemeral: true
+  });
+}
+```
+
+#### Timeout Utilities
 
 ```typescript
 import { withTimeout } from 'intmen-lib';
 
-// In your command handler
-async function handleCommand(interaction) {
-  // Wrap asynchronous operations with timeout
-  try {
-    await withTimeout(
-      someAsyncFunction(), // Your async operation
-      interaction,
-      {
-        timeout: 5000, // 5 seconds timeout
-        timeoutMessage: 'The operation took too long to complete',
-        ephemeral: true
+// Automatically timeout a long-running operation
+const result = await withTimeout(
+  someAsyncOperation(), // Promise that might take too long
+  5000, // Timeout in ms (5 seconds)
+  () => {
+    // Optional callback when timeout occurs
+    console.log('Operation timed out');
+    return 'Fallback value';
+  }
+);
+
+// With interaction handler
+const command = new SlashCommandBuilder()
+  .setName('search')
+  .setDescription('Search for something')
+  .setHandler(async (interaction) => {
+    // Defer the reply first
+    await interaction.deferReply();
+    
+    try {
+      // Wrap the long operation with timeout
+      const result = await withTimeout(
+        performLongSearch(interaction.options.getString('query')),
+        10000, // 10 seconds
+        async () => {
+          // This runs if the operation times out
+          await interaction.editReply('The search operation timed out!');
+          return null; // Return a fallback value
+        }
+      );
+      
+      if (result) {
+        await interaction.editReply(`Search results: ${result}`);
       }
-    );
-  } catch (error) {
-    console.error('Operation timed out or failed:', error);
-  }
-}
+    } catch (error) {
+      await interaction.editReply('An error occurred during the search.');
+    }
+  });
 ```
-
-### Command Registration
-
-```typescript
-// Register global commands (available in all guilds)
-await manager.registerGlobalCommands(applicationId);
-
-// Register guild-specific commands (only available in specified guild)
-await manager.registerGuildCommands(applicationId, guildId);
-
-// Register custom command list
-const customCommands = [
-  {
-    name: 'custom',
-    description: 'A custom command',
-    type: 1
-  }
-];
-await manager.registerGlobalCommands(applicationId, customCommands);
-```
-
-## 🔄 Update Plan
-
-Version 1.0.4 is an **unstable development version**. We are actively working on the following improvements for the next stable release:
-
-- Fix autocomplete interaction handling issues
-- Improve type safety throughout the codebase
-- Enhance error handling with more descriptive messages
-- Optimize command registration performance
-- Fix edge cases in interaction timeout utility
-
-Stay tuned for the next stable release, which will incorporate all these improvements with full backward compatibility.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add some amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
-[MIT](LICENSE) © KXNVRA 
+## 📝 License
+
+Distributed under the [MIT License](https://opensource.org/licenses/MIT). See `LICENSE` for more information.
+
+## 🔄 Changelog
+
+### v1.1.0
+
+- Added support for subcommands and subcommand groups
+- Created new ContextMenuCommandBuilder for easier context menu commands
+- Added PermissionUtils for managing Discord permissions
+- Added InteractionValidators for interaction validation
+- Enhanced error handling with customizable error responses
+- Improved timeout handling for long-running operations
+- Added extensive documentation
+
+### v1.0.4
+
+- Fixed critical issues with interaction handling
+- Enhanced type safety for TypeScript users
+- Improved error handling
+
+### v1.0.3
+
+- Initial stable release
+- Core interaction management functionality
+- Basic builders for all interaction types
