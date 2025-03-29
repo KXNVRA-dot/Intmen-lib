@@ -1,20 +1,47 @@
-// Export types
-export * from './types';
-
-// Export main class
+// Core components
 export { InteractionManager } from './core/InteractionManager';
 
-// Export builders
-export { SlashCommandBuilder } from './core/builders/SlashCommandBuilder';
+// Builders
+export { SlashCommandBuilder, SubcommandBuilder, SubcommandGroupBuilder } from './core/builders/SlashCommandBuilder';
+export { ContextMenuCommandBuilder } from './core/builders/ContextMenuCommandBuilder';
 export { ButtonBuilder } from './core/builders/ButtonBuilder';
 export { SelectMenuBuilder } from './core/builders/SelectMenuBuilder';
 export { 
-  ModalBuilder,
-  ModalInputStyle
+  ModalBuilder, 
+  ModalInputComponent
 } from './core/builders/ModalBuilder';
 
-// Export utilities
-export { Logger } from './utils/logger';
+// Types
+export {
+  Command,
+  CommandHandler,
+  CommandOption,
+  ButtonHandler,
+  ModalHandler,
+  SelectMenuHandler,
+  ErrorResponseOptions,
+  ErrorHandler,
+  InteractionManagerOptions,
+  ButtonStyle,
+  SelectMenuOption,
+  InteractionType
+} from './types';
+
+// Utilities
+export { Logger, LogLevel } from './utils/logger';
+export { 
+  createActionRow, 
+  createActionRows, 
+  createButton, 
+  createSelectMenu,
+  createTextInput
+} from './utils/component-helpers';
+export { withTimeout } from './utils/interaction-timeout';
+export { PermissionUtils } from './utils/permissions';
+export { InteractionValidators } from './utils/interaction-validators';
+
+// Re-export TimeoutOptions from interaction-timeout
+export type { TimeoutOptions } from './utils/interaction-timeout';
 
 // Re-export necessary types from discord.js for convenience
 export {
@@ -26,5 +53,17 @@ export {
   ApplicationCommandType,
   ApplicationCommandOptionType,
   MessageType,
-  TextInputStyle
-} from 'discord.js'; 
+  TextInputStyle,
+  Interaction,
+  CommandInteraction,
+  ButtonInteraction,
+  SelectMenuInteraction,
+  ModalSubmitInteraction,
+  ContextMenuCommandInteraction,
+  AutocompleteInteraction,
+  ChatInputCommandInteraction,
+  UserContextMenuCommandInteraction,
+  MessageContextMenuCommandInteraction,
+  REST,
+  Routes
+} from 'discord.js';
