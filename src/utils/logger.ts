@@ -50,23 +50,34 @@ export class Logger {
   private readonly timestamps: boolean;
 
   /**
-   * Creates a new logger instance
-   * @param options Logger options or prefix string
+   * Creates a new logger instance.
+   *
+   * The constructor supports both the original two argument form
+   * `new Logger(prefix, debug)` and the newer options object form
+   * `new Logger({ prefix, level })`.
+   *
+   * @param optionsOrPrefix Options object or prefix string
+   * @param debug Whether debug logging should be enabled (only for prefix form)
    */
-  constructor(options: LoggerOptions | string = {}) {
-    // Handle string as prefix (for backward compatibility)
-    if (typeof options === 'string') {
-      this.prefix = options;
-      this.level = LogLevel.INFO;
+  constructor(optionsOrPrefix: LoggerOptions | string = {}, debug = false) {
+    // Handle legacy signature where a prefix and optional debug flag are provided
+    if (typeof optionsOrPrefix === 'string') {
+      this.prefix = optionsOrPrefix;
+      this.level = debug ? LogLevel.DEBUG : LogLevel.INFO;
       this.useColors = true;
       this.timestamps = true;
-    } else {
-      this.prefix = options.prefix || 'Intmen-lib';
-      this.level = options.level !== undefined ? options.level : 
-        (options.level === LogLevel.DEBUG ? LogLevel.DEBUG : LogLevel.INFO);
-      this.useColors = options.useColors !== undefined ? options.useColors : true;
-      this.timestamps = options.timestamps !== undefined ? options.timestamps : true;
+      return;
     }
+
+    // Handle options object
+    const options = optionsOrPrefix;
+    this.prefix = options.prefix || 'Intmen-lib';
+    this.level =
+      options.level !== undefined
+        ? options.level
+        : LogLevel.INFO;
+    this.useColors = options.useColors !== undefined ? options.useColors : true;
+    this.timestamps = options.timestamps !== undefined ? options.timestamps : true;
   }
 
   /**
