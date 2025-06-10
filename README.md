@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.1.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
+[![npm version](https://img.shields.io/badge/npm-1.2.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
@@ -13,7 +13,7 @@ A specialized library for managing interactive elements of Discord bots, includi
 
 </div>
 
-> 🚀 **NEW VERSION 1.1.0 AVAILABLE**: Featuring enhanced error handling, improved builders, and new utility classes. This version is stable and recommended for production use.
+> 🚀 **NEW VERSION 1.2.0 AVAILABLE**: Now includes built-in command cooldowns alongside enhanced error handling and utility classes. This version is stable and recommended for production use.
 
 ## ✨ Features
 
@@ -27,6 +27,7 @@ A specialized library for managing interactive elements of Discord bots, includi
 - 📘 **Well Documented** - Clear and concise documentation
 - 🔑 **Permission Utilities** - Simplify Discord permission checks with built-in utilities
 - ✅ **Validation** - Robust interaction validation with fluent API
+- ⏱️ **Cooldowns** - Built-in per-user command cooldown support
 
 ## 📥 Installation
 

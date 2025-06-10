@@ -18,6 +18,7 @@ export class SlashCommandBuilder {
   private readonly _defaultMemberPermissions: bigint | null = null;
   private readonly _dmPermission: boolean = true;
   private readonly _nsfw: boolean = false;
+  private _cooldown: number = 0;
 
   /**
    * Creates a new slash command builder instance
@@ -322,6 +323,15 @@ export class SlashCommandBuilder {
   }
 
   /**
+   * Sets cooldown duration in milliseconds
+   * @param cooldownMs Cooldown time in ms
+   */
+  public setCooldown(cooldownMs: number): SlashCommandBuilder {
+    this._cooldown = cooldownMs;
+    return this;
+  }
+
+  /**
    * Sets the command handler
    * @param handler Handler function called when the command is used
    */
@@ -351,7 +361,8 @@ export class SlashCommandBuilder {
       type: InteractionType.COMMAND,
       id: this._data.name,
       data: this._data,
-      handler: this._handler
+      handler: this._handler,
+      cooldown: this._cooldown
     };
   }
 }
