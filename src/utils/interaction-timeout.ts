@@ -78,9 +78,10 @@ export async function withTimeout<T, I>(
 ): Promise<T> {
   const { timeout, timeoutMessage, ephemeral = true, onTimeout } = options;
   
-  // Create a timeout promise
+  // Create a timeout promise and keep track of the timer so we can clear it
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       reject(new InteractionTimeoutError(interaction as unknown as Interaction, timeout));
     }, timeout);
   });
@@ -119,6 +120,8 @@ export async function withTimeout<T, I>(
       throw error; // Re-throw the timeout error for the caller to handle
     }
     throw error; // Re-throw other errors
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
