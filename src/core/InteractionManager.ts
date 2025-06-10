@@ -44,6 +44,7 @@ export class InteractionManager {
   private readonly interactions: Map<string, RegisterableInteraction>;
   private readonly rest: REST;
   private readonly patterns: Map<RegExp, RegisterableInteraction>;
+  private readonly cooldowns: Map<string, Map<string, number>>;
 
   /**
    * Creates a new interaction manager instance
@@ -58,6 +59,7 @@ export class InteractionManager {
       defaultErrorMessage: 'An error occurred while handling the interaction',
       defaultErrorEphemeral: true,
       interactionTimeout: 15000,
+      cooldownMessage: 'Please wait {remaining}s before using this command again.',
       ...options
     };
     this.logger = new Logger({
@@ -66,6 +68,7 @@ export class InteractionManager {
     });
     this.interactions = new Map<string, RegisterableInteraction>();
     this.patterns = new Map<RegExp, RegisterableInteraction>();
+    this.cooldowns = new Map<string, Map<string, number>>();
     
     // Initialize the REST client with the provided token
     if (!client.token && !this.options.botToken) {
@@ -128,6 +131,30 @@ export class InteractionManager {
     if (!command) {
       this.logger.warn(`Command not found: ${interaction.commandName}`);
       return;
+    }
+
+    // Cooldown handling for commands
+    if (command.cooldown && command.cooldown > 0) {
+      const now = Date.now();
+      const userCooldowns = this.cooldowns.get(command.id) || new Map<string, number>();
+      const lastUsed = userCooldowns.get(interaction.user.id) || 0;
+      const remaining = lastUsed + command.cooldown - now;
+      if (remaining > 0) {
+        const msg = (this.options.cooldownMessage || 'Please wait {remaining}s before using this command again.')
+          .replace('{remaining}', Math.ceil(remaining / 1000).toString());
+        try {
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({ content: msg, ephemeral: true });
+          } else if (interaction.deferred && !interaction.replied) {
+            await interaction.editReply({ content: msg });
+          }
+        } catch (err) {
+          this.logger.error('Failed to send cooldown message', err as Error);
+        }
+        return;
+      }
+      userCooldowns.set(interaction.user.id, now);
+      this.cooldowns.set(command.id, userCooldowns);
     }
 
     try {

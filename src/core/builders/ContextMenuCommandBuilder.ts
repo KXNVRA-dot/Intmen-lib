@@ -13,6 +13,7 @@ export class ContextMenuCommandBuilder {
   private readonly _defaultMemberPermissions: bigint | null = null;
   private readonly _dmPermission: boolean = true;
   private readonly _nsfw: boolean = false;
+  private _cooldown: number = 0;
 
   /**
    * Creates a new context menu command builder instance
@@ -72,6 +73,15 @@ export class ContextMenuCommandBuilder {
   }
 
   /**
+   * Sets cooldown duration in milliseconds
+   * @param cooldownMs Cooldown time in ms
+   */
+  public setCooldown(cooldownMs: number): ContextMenuCommandBuilder {
+    this._cooldown = cooldownMs;
+    return this;
+  }
+
+  /**
    * Sets the default member permissions required to use the command (bitfield)
    * @param permissions Permission bit flags
    */
@@ -106,7 +116,8 @@ export class ContextMenuCommandBuilder {
       type: InteractionType.COMMAND,
       id: this._data.name,
       data: this._data,
-      handler: this._handler
+      handler: this._handler,
+      cooldown: this._cooldown
     };
   }
 }

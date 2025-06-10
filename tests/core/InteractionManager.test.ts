@@ -303,6 +303,41 @@ describe('InteractionManager', () => {
     });
   });
 
+  describe('Command cooldowns', () => {
+    it('should prevent execution when on cooldown', async () => {
+      const handler = jest.fn();
+      const command = new SlashCommandBuilder()
+        .setName('cool')
+        .setDescription('cooldown test')
+        .setCooldown(5000)
+        .setHandler(handler);
+      manager.registerCommand(command.build());
+
+      const baseInteraction = {
+        isCommand: () => true,
+        isButton: () => false,
+        isSelectMenu: () => false,
+        isModalSubmit: () => false,
+        isContextMenuCommand: () => false,
+        isAutocomplete: () => false,
+        commandName: 'cool',
+        user: { id: 'user1' },
+        replied: false,
+        deferred: false,
+        reply: jest.fn().mockResolvedValue(undefined),
+        editReply: jest.fn().mockResolvedValue(undefined)
+      } as unknown as CommandInteraction;
+
+      await manager['handleInteraction'](baseInteraction as Interaction);
+      expect(handler).toHaveBeenCalledTimes(1);
+
+      const second = { ...baseInteraction, reply: jest.fn().mockResolvedValue(undefined) } as unknown as CommandInteraction;
+      await manager['handleInteraction'](second as Interaction);
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(second.reply).toHaveBeenCalledWith(expect.objectContaining({ content: expect.stringContaining('wait'), ephemeral: true }));
+    });
+  });
+
   describe('Command Registration with API', () => {
     let mockRest: jest.Mocked<REST>;
     

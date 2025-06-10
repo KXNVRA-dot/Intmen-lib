@@ -78,6 +78,8 @@ export interface Command extends BaseInteraction {
   id: string;
   handler: CommandHandler;
   data: RESTPostAPIApplicationCommandsJSONBody;
+  /** Optional cooldown in milliseconds */
+  cooldown?: number;
 }
 
 /**
@@ -154,6 +156,8 @@ export interface InteractionManagerOptions {
   interactionTimeout?: number;
   /** Bot token (useful when client token is not available at initialization) */
   botToken?: string;
+  /** Message shown when a command is used before cooldown expires. Use {remaining} placeholder for seconds */
+  cooldownMessage?: string;
 }
 
 /**
