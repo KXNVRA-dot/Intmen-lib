@@ -13,6 +13,10 @@ import {
 /**
  * Extended CommandInteraction type
  */
+
+/**
+ * Extended CommandInteraction type
+ */
 export type CommandInteraction = DiscordCommandInteraction;
 
 /**
