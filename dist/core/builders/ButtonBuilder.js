@@ -12,6 +12,7 @@ class ButtonBuilder {
         this._style = types_1.ButtonStyle.PRIMARY;
         this._disabled = false;
         this._handler = null;
+        this._middlewares = [];
     }
     /**
      * Sets the custom ID for the button
@@ -69,6 +70,11 @@ class ButtonBuilder {
         this._handler = handler;
         return this;
     }
+    /** Attach one or more middlewares to this button */
+    use(...middlewares) {
+        this._middlewares.push(...middlewares);
+        return this;
+    }
     /**
      * Builds and returns the button object
      * @returns Button object ready for registration
@@ -94,7 +100,8 @@ class ButtonBuilder {
         return {
             type: types_1.InteractionType.BUTTON,
             id: this._customId,
-            handler: this._handler
+            handler: this._handler,
+            middlewares: this._middlewares
         };
     }
     /**

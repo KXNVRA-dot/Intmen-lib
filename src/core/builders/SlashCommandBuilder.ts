@@ -7,18 +7,20 @@ import {
   APIApplicationCommandSubcommandGroupOption,
   APIApplicationCommandBasicOption
 } from 'discord.js';
-import { Command, CommandHandler, CommandOption, InteractionType } from '../../types';
+import { Command, CommandOption, InteractionType, InteractionHandler, CooldownScope, Middleware } from '../../types';
 
 /**
  * Builder for creating slash commands
  */
 export class SlashCommandBuilder {
   private readonly _data: RESTPostAPIApplicationCommandsJSONBody;
-  private _handler: CommandHandler | null = null;
+  private _handler: InteractionHandler | null = null;
   private readonly _defaultMemberPermissions: bigint | null = null;
   private readonly _dmPermission: boolean = true;
   private readonly _nsfw: boolean = false;
   private _cooldown: number = 0;
+  private _cooldownScope: CooldownScope = CooldownScope.USER;
+  private _middlewares: Middleware[] = [];
 
   /**
    * Creates a new slash command builder instance
@@ -331,12 +333,24 @@ export class SlashCommandBuilder {
     return this;
   }
 
+  /** Sets cooldown scope (user/guild/channel/global) */
+  public setCooldownScope(scope: CooldownScope): SlashCommandBuilder {
+    this._cooldownScope = scope;
+    return this;
+  }
+
   /**
    * Sets the command handler
    * @param handler Handler function called when the command is used
    */
-  public setHandler(handler: CommandHandler): SlashCommandBuilder {
+  public setHandler(handler: InteractionHandler): SlashCommandBuilder {
     this._handler = handler;
+    return this;
+  }
+
+  /** Attach one or more middlewares to this command */
+  public use(...middlewares: Middleware[]): SlashCommandBuilder {
+    this._middlewares.push(...middlewares);
     return this;
   }
 
@@ -361,8 +375,10 @@ export class SlashCommandBuilder {
       type: InteractionType.COMMAND,
       id: this._data.name,
       data: this._data,
-      handler: this._handler,
-      cooldown: this._cooldown
+  handler: this._handler,
+  cooldown: this._cooldown,
+  cooldownScope: this._cooldownScope,
+  middlewares: this._middlewares
     };
   }
 }

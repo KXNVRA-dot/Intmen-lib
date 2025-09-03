@@ -2,31 +2,45 @@ import { ButtonInteraction, CommandInteraction as DiscordCommandInteraction, Mod
 /**
  * Extended CommandInteraction type
  */
+/**
+ * Extended CommandInteraction type
+ */
 export type CommandInteraction = DiscordCommandInteraction;
 /**
  * Handler for slash commands
  */
-export type CommandHandler = (interaction: CommandInteraction) => Promise<void>;
+export interface InteractionContext<T = unknown> {
+    interaction: T;
+    /** Optional key/value bag for sharing data across middlewares */
+    state: Map<string, unknown>;
+    /** Params extracted from pattern matching (e.g., customId regex groups) */
+    params?: Record<string, string>;
+    /** Logger and manager are intentionally typed as any to avoid circular deps */
+    logger?: unknown;
+    manager?: unknown;
+}
+export type Middleware<T = unknown> = (ctx: InteractionContext<T>, next: () => Promise<void>) => Promise<void>;
+export type InteractionHandler<T = unknown> = (ctx: InteractionContext<T>) => Promise<void>;
 /**
  * Handler for buttons
  */
-export type ButtonHandler = (interaction: ButtonInteraction) => Promise<void>;
+export type ButtonHandler = InteractionHandler<ButtonInteraction>;
 /**
  * Handler for select menus
  */
-export type SelectMenuHandler = (interaction: SelectMenuInteraction) => Promise<void>;
+export type SelectMenuHandler = InteractionHandler<SelectMenuInteraction>;
 /**
  * Handler for modal windows
  */
-export type ModalHandler = (interaction: ModalSubmitInteraction) => Promise<void>;
+export type ModalHandler = InteractionHandler<ModalSubmitInteraction>;
 /**
  * Handler for context menus
  */
-export type ContextMenuHandler = (interaction: ContextMenuCommandInteraction) => Promise<void>;
+export type ContextMenuHandler = InteractionHandler<ContextMenuCommandInteraction>;
 /**
  * Handler for autocomplete
  */
-export type AutocompleteHandler = (interaction: AutocompleteInteraction) => Promise<void>;
+export type AutocompleteHandler = InteractionHandler<AutocompleteInteraction>;
 /**
  * Custom error handler for interactions
  */
@@ -48,6 +62,8 @@ export declare enum InteractionType {
 export interface BaseInteraction {
     type: InteractionType;
     id: string;
+    /** Optional per-interaction middleware chain */
+    middlewares?: Middleware[];
 }
 /**
  * Interface for commands
@@ -55,8 +71,12 @@ export interface BaseInteraction {
 export interface Command extends BaseInteraction {
     type: InteractionType.COMMAND;
     id: string;
-    handler: CommandHandler;
+    handler: InteractionHandler<CommandInteraction>;
     data: RESTPostAPIApplicationCommandsJSONBody;
+    /** Optional cooldown in milliseconds */
+    cooldown?: number;
+    /** Optional cooldown scope */
+    cooldownScope?: CooldownScope;
 }
 /**
  * Interface for buttons
@@ -90,6 +110,10 @@ export interface ContextMenu extends BaseInteraction {
     id: string;
     handler: ContextMenuHandler;
     data: RESTPostAPIApplicationCommandsJSONBody;
+    /** Optional cooldown in milliseconds */
+    cooldown?: number;
+    /** Optional cooldown scope */
+    cooldownScope?: CooldownScope;
 }
 /**
  * Interface for autocomplete
@@ -126,6 +150,10 @@ export interface InteractionManagerOptions {
     interactionTimeout?: number;
     /** Bot token (useful when client token is not available at initialization) */
     botToken?: string;
+    /** Message shown when a command is used before cooldown expires. Use {remaining} placeholder for seconds */
+    cooldownMessage?: string;
+    /** Global middlewares applied to every interaction before its own middlewares */
+    middlewares?: Middleware[];
 }
 /**
  * Type for registerable interactions
@@ -140,6 +168,15 @@ export declare enum ButtonStyle {
     SUCCESS = 3,
     DANGER = 4,
     LINK = 5
+}
+/**
+ * Scope for applying cooldowns
+ */
+export declare enum CooldownScope {
+    USER = "user",
+    GUILD = "guild",
+    CHANNEL = "channel",
+    GLOBAL = "global"
 }
 /**
  * Options for creating select menu

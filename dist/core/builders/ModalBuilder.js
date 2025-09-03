@@ -21,6 +21,7 @@ class ModalBuilder {
         this._title = '';
         this._components = [];
         this._handler = null;
+        this._middlewares = [];
     }
     /**
      * Sets the custom ID for the modal
@@ -84,6 +85,11 @@ class ModalBuilder {
         this._handler = handler;
         return this;
     }
+    /** Attach one or more middlewares to this modal */
+    use(...middlewares) {
+        this._middlewares.push(...middlewares);
+        return this;
+    }
     /**
      * Builds and returns the modal object
      * @returns Modal object ready for registration
@@ -107,7 +113,8 @@ class ModalBuilder {
         return {
             type: types_1.InteractionType.MODAL,
             id: this._customId,
-            handler: this._handler
+            handler: this._handler,
+            middlewares: this._middlewares
         };
     }
     /**

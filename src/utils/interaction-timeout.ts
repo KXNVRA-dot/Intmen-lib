@@ -1,4 +1,4 @@
-import { Interaction, InteractionType, RepliableInteraction, CommandInteraction, ButtonInteraction, SelectMenuInteraction, ModalSubmitInteraction, ContextMenuCommandInteraction, AutocompleteInteraction } from 'discord.js';
+import { Interaction, RepliableInteraction } from 'discord.js';
 import { Logger } from './logger';
 
 const logger = new Logger({ prefix: 'InteractionTimeout' });
@@ -71,9 +71,9 @@ export function canReply(interaction: Interaction): boolean {
  * @param options Timeout options
  * @returns Promise resolving with the original promise result
  */
-export async function withTimeout<T, I>(
+export async function withTimeout<T>(
   promise: Promise<T>,
-  interaction: I,
+  interaction: unknown,
   options: TimeoutOptions
 ): Promise<T> {
   const { timeout, timeoutMessage, ephemeral = true, onTimeout } = options;
@@ -82,7 +82,7 @@ export async function withTimeout<T, I>(
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
-      reject(new InteractionTimeoutError(interaction as unknown as Interaction, timeout));
+  reject(new InteractionTimeoutError(interaction as Interaction, timeout));
     }, timeout);
   });
 
@@ -94,9 +94,9 @@ export async function withTimeout<T, I>(
       logger.debug(`Interaction timed out after ${timeout}ms`);
       
       // Execute the optional timeout callback
-      if (onTimeout) {
+    if (onTimeout) {
         try {
-          await onTimeout(interaction as any);
+      await onTimeout(interaction as Interaction);
         } catch (callbackError) {
           logger.error('Error in timeout callback', callbackError);
         }
@@ -104,10 +104,10 @@ export async function withTimeout<T, I>(
       
       // Only try to respond if the interaction can be replied to
       try {
-        const interactionObj = interaction as unknown as Interaction;
+        const interactionObj = interaction as Interaction;
         if (canReply(interactionObj)) {
           // Cast to the appropriate repliable interaction type
-          const repliableInteraction = interactionObj as unknown as RepliableInteraction;
+          const repliableInteraction = interactionObj as RepliableInteraction;
           await repliableInteraction.reply({
             content: timeoutMessage,
             ephemeral

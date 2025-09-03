@@ -15,6 +15,9 @@ class SlashCommandBuilder {
         this._defaultMemberPermissions = null;
         this._dmPermission = true;
         this._nsfw = false;
+        this._cooldown = 0;
+        this._cooldownScope = types_1.CooldownScope.USER;
+        this._middlewares = [];
         this._data = {
             name: '',
             type: discord_js_1.ApplicationCommandType.ChatInput,
@@ -260,11 +263,29 @@ class SlashCommandBuilder {
         }
     }
     /**
+     * Sets cooldown duration in milliseconds
+     * @param cooldownMs Cooldown time in ms
+     */
+    setCooldown(cooldownMs) {
+        this._cooldown = cooldownMs;
+        return this;
+    }
+    /** Sets cooldown scope (user/guild/channel/global) */
+    setCooldownScope(scope) {
+        this._cooldownScope = scope;
+        return this;
+    }
+    /**
      * Sets the command handler
      * @param handler Handler function called when the command is used
      */
     setHandler(handler) {
         this._handler = handler;
+        return this;
+    }
+    /** Attach one or more middlewares to this command */
+    use(...middlewares) {
+        this._middlewares.push(...middlewares);
         return this;
     }
     /**
@@ -285,7 +306,10 @@ class SlashCommandBuilder {
             type: types_1.InteractionType.COMMAND,
             id: this._data.name,
             data: this._data,
-            handler: this._handler
+            handler: this._handler,
+            cooldown: this._cooldown,
+            cooldownScope: this._cooldownScope,
+            middlewares: this._middlewares
         };
     }
 }

@@ -30,10 +30,16 @@ export declare class Logger {
     private readonly useColors;
     private readonly timestamps;
     /**
-     * Creates a new logger instance
-     * @param options Logger options or prefix string
+     * Creates a new logger instance.
+     *
+     * The constructor supports both the original two argument form
+     * `new Logger(prefix, debug)` and the newer options object form
+     * `new Logger({ prefix, level })`.
+     *
+     * @param optionsOrPrefix Options object or prefix string
+     * @param debug Whether debug logging should be enabled (only for prefix form)
      */
-    constructor(options?: LoggerOptions | string);
+    constructor(optionsOrPrefix?: LoggerOptions | string, debug?: boolean);
     /**
      * Creates a timestamp string
      * @returns Formatted timestamp
@@ -52,13 +58,13 @@ export declare class Logger {
      * @param message Message to display
      * @param data Additional data to log
      */
-    info(message: string, data?: any): void;
+    info(message: string, data?: unknown): void;
     /**
      * Displays a warning
      * @param message Warning message
      * @param data Additional data to log
      */
-    warn(message: string, data?: any): void;
+    warn(message: string, data?: unknown): void;
     /**
      * Displays an error
      * @param message Error message
@@ -70,7 +76,7 @@ export declare class Logger {
      * @param message Debug message
      * @param data Additional data to log
      */
-    debug(message: string, data?: any): void;
+    debug(message: string, data?: unknown): void;
     /**
      * Creates a new logger with the same settings but a different prefix
      * @param prefix New prefix to use

@@ -2,18 +2,20 @@ import {
   ApplicationCommandType,
   RESTPostAPIApplicationCommandsJSONBody
 } from 'discord.js';
-import { Command, CommandHandler, InteractionType } from '../../types';
+import { InteractionType, ContextMenu, InteractionHandler, CooldownScope, Middleware } from '../../types';
 
 /**
  * Builder for creating context menu commands (user and message commands)
  */
 export class ContextMenuCommandBuilder {
   private readonly _data: RESTPostAPIApplicationCommandsJSONBody;
-  private _handler: CommandHandler | null = null;
+  private _handler: InteractionHandler | null = null;
   private readonly _defaultMemberPermissions: bigint | null = null;
   private readonly _dmPermission: boolean = true;
   private readonly _nsfw: boolean = false;
   private _cooldown: number = 0;
+  private _cooldownScope: CooldownScope = CooldownScope.USER;
+  private _middlewares: Middleware[] = [];
 
   /**
    * Creates a new context menu command builder instance
@@ -81,6 +83,12 @@ export class ContextMenuCommandBuilder {
     return this;
   }
 
+  /** Sets cooldown scope (user/guild/channel/global) */
+  public setCooldownScope(scope: CooldownScope): ContextMenuCommandBuilder {
+    this._cooldownScope = scope;
+    return this;
+  }
+
   /**
    * Sets the default member permissions required to use the command (bitfield)
    * @param permissions Permission bit flags
@@ -94,8 +102,14 @@ export class ContextMenuCommandBuilder {
    * Sets the command handler
    * @param handler Handler function called when the command is used
    */
-  public setHandler(handler: CommandHandler): ContextMenuCommandBuilder {
+  public setHandler(handler: InteractionHandler): ContextMenuCommandBuilder {
     this._handler = handler;
+    return this;
+  }
+
+  /** Attach one or more middlewares to this context menu */
+  public use(...middlewares: Middleware[]): ContextMenuCommandBuilder {
+    this._middlewares.push(...middlewares);
     return this;
   }
 
@@ -103,7 +117,7 @@ export class ContextMenuCommandBuilder {
    * Builds and returns the command object
    * @returns Command object ready for registration
    */
-  public build(): Command {
+  public build(): ContextMenu {
     if (!this._data.name) {
       throw new Error('Command name is required');
     }
@@ -113,11 +127,13 @@ export class ContextMenuCommandBuilder {
     }
     
     return {
-      type: InteractionType.COMMAND,
+      type: InteractionType.CONTEXT_MENU,
       id: this._data.name,
       data: this._data,
-      handler: this._handler,
-      cooldown: this._cooldown
+  handler: this._handler,
+  cooldown: this._cooldown,
+  cooldownScope: this._cooldownScope,
+  middlewares: this._middlewares
     };
   }
 }

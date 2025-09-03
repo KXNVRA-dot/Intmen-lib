@@ -3,29 +3,28 @@
 <div align="center">
 
 ![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.2.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
+[![npm version](https://img.shields.io/badge/npm-2.0.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
-[![Test Coverage](https://img.shields.io/badge/coverage-93%25-green?style=flat-square)](https://github.com/KXNVRA-dot/Intmen-lib)
+ 
 
 Специализированная библиотека для управления интерактивными элементами Discord-ботов, включая слэш-команды, кнопки, выпадающие меню, модальные окна, контекстные меню и автозаполнение.
 
 </div>
 
-> 🚀 **НОВАЯ ВЕРСИЯ 1.2.0**: Добавлена поддержка кулдаунов команд и улучшена стабильность библиотеки.
+> 🚀 **MAJOR 2.0.0**: Контекстные обработчики, middleware, области кулдаунов (user/guild/channel/global) и паттерны ID с именованными параметрами. Это ломающий релиз — смотрите раздел Миграция.
 
 ## ✨ Особенности
 
-- 🚀 **Простое API** - Интуитивно понятный интерфейс для управления взаимодействиями Discord
-- 🔒 **Типобезопасность** - Построена с использованием TypeScript для надежной проверки типов и строгой типизации
-- 📦 **Полная поддержка** - Поддерживает все типы взаимодействий Discord: слэш-команды, контекстные меню, кнопки, выпадающие меню, модальные окна и автозаполнение
-- 🧩 **Модульность** - Гибкая архитектура для чистой организации кода
-- ⚡ **Шаблон Builder** - Плавные построители для легкого создания интерактивных элементов
-- 🛡️ **Обработка ошибок** - Комплексное управление ошибками с правильной типизацией
-- 🧪 **Полностью протестирована** - Высокое покрытие тестами (>93%) для надежности
-- 📘 **Хорошо документирована** - Ясная и лаконичная документация
-- ⏱️ **Кулдауны** - Поддержка задержек между повторным использованием команд
+- 🚀 Простое API
+- 🔒 TypeScript типобезопасность
+- 📦 Все типы взаимодействий: слэш-команды, контекстные меню, кнопки, меню, модальные окна, автозаполнение
+- � Новое: контекст обработчика `{ interaction, state, params, logger, manager }`
+- 🧵 Новое: middleware (глобальные и локальные) с `next()`
+- ⏱️ Новое: области кулдаунов (user/guild/channel/global)
+- � Новое: паттерны customId (RegExp) и `ctx.params` из именованных групп
+- 🛡️ Улучшенная обработка ошибок и таймаутов
 
 ## 📥 Установка
 
@@ -52,13 +51,13 @@ const client = new Client({
 });
 
 // Create interaction manager
-const manager = new InteractionManager(client);
+const manager = new InteractionManager(client, { middlewares: [async (ctx, next) => { await next(); }] });
 
 // Register slash command
 const pingCommand = new SlashCommandBuilder()
   .setName('ping')
   .setDescription('Check bot latency')
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const sent = await interaction.reply({ 
       content: '📡 Pinging...', 
       fetchReply: true 
@@ -83,13 +82,12 @@ client.login('YOUR_TOKEN_HERE');
 
 ## 📖 Документация
 
-### Известные проблемы в v1.0.4 (нестабильной)
+### Новое в v2.0.0
 
-- Взаимодействия автозаполнения могут вызывать ошибки в определенных сценариях
-- Регистрация команд может работать некорректно с большими наборами команд
-- Определения типов TypeScript могут иметь несоответствия
-
-Эти проблемы в настоящее время исправляются и будут решены в следующем стабильном релизе.
+- Контекст обработчика: единый объект вместо `(interaction)`
+- Цепочки middleware: глобальные и пер-объектные
+- Области кулдаунов: пользователь, гильдия, канал, глобально
+- Паттерны ID (RegExp) и параметры из именованных групп
 
 ### Интерактивные элементы
 
@@ -106,7 +104,7 @@ const userCommand = new SlashCommandBuilder()
       .setDescription('Target user')
       .setRequired(true)
   )
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction, state }) => {
     const user = interaction.options.getUser('target');
     await interaction.reply(`Username: ${user.username}`);
   });
@@ -127,7 +125,7 @@ const userContextMenu = {
     name: 'User Info',
     type: 2 // USER type
   },
-  handler: async (interaction) => {
+  handler: async ({ interaction }) => {
     const user = interaction.targetUser;
     await interaction.reply({
       content: `Information about ${user.username}`,
@@ -150,7 +148,7 @@ const button = new ButtonBuilder()
   .setLabel('Confirm')
   .setStyle(ButtonStyle.SUCCESS)
   .setEmoji('✅')
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     await interaction.reply({ 
       content: 'Action confirmed!', 
       ephemeral: true 
@@ -192,7 +190,7 @@ const roleMenu = new SelectMenuBuilder()
     description: 'UI/UX designer',
     emoji: '🎨'
   })
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const roles = interaction.values;
     await interaction.reply({
       content: `You selected: ${roles.join(', ')}`,
@@ -220,7 +218,7 @@ const feedbackModal = new ModalBuilder()
     required: true,
     placeholder: 'Detailed feedback'
   })
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const title = interaction.fields.getTextInputValue('feedback_title');
     const description = interaction.fields.getTextInputValue('feedback_description');
     
@@ -240,7 +238,7 @@ buttonHandler.setHandler(async (interaction) => {
 
 #### Взаимодействия автозаполнения
 
-> ⚠️ **Примечание**: Взаимодействия автозаполнения имеют известные проблемы в версии 1.0.4
+> Пример автозаполнения
 
 ```typescript
 import { InteractionType } from 'intmen-lib';
@@ -256,7 +254,7 @@ const searchCommand = new SlashCommandBuilder()
       .setRequired(true)
       .setAutocomplete(true)
   )
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const query = interaction.options.getString('query');
     await interaction.reply(`Searching for: ${query}`);
   });
@@ -265,7 +263,7 @@ const searchCommand = new SlashCommandBuilder()
 const searchAutocomplete = {
   id: 'search',
   type: InteractionType.AUTOCOMPLETE,
-  handler: async (interaction) => {
+  handler: async ({ interaction }) => {
     const input = interaction.options.getFocused().toString();
     
     // Filter your items based on input
@@ -298,13 +296,9 @@ async function handleCommand(interaction) {
   // Wrap asynchronous operations with timeout
   try {
     await withTimeout(
-      someAsyncFunction(), // Your async operation
+      someAsyncFunction(),
       interaction,
-      {
-        timeout: 5000, // 5 seconds timeout
-        timeoutMessage: 'The operation took too long to complete',
-        ephemeral: true
-      }
+      { timeout: 5000, timeoutMessage: 'The operation took too long to complete', ephemeral: true }
     );
   } catch (error) {
     console.error('Operation timed out or failed:', error);
@@ -332,17 +326,12 @@ const customCommands = [
 await manager.registerGlobalCommands(applicationId, customCommands);
 ```
 
-## 🔄 План обновлений
+## 🔄 Изменения
 
-Версия 1.0.4 - это **нестабильная версия разработки**. Мы активно работаем над следующими улучшениями для следующего стабильного релиза:
+### v2.0.0
 
-- Исправление проблем с обработкой взаимодействий автозаполнения
-- Улучшение типобезопасности во всей кодовой базе
-- Улучшение обработки ошибок с более информативными сообщениями
-- Оптимизация производительности регистрации команд
-- Исправление крайних случаев в утилите таймаутов взаимодействий
-
-Ожидайте следующий стабильный релиз, который включит все эти улучшения с полной обратной совместимостью.
+- Ломающее изменение: обработчики принимают контекст
+- Middleware, области кулдаунов, паттерны ID, улучшенные ошибки и таймауты
 
 ## 🤝 Вклад в разработку
 

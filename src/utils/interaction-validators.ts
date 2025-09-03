@@ -1,4 +1,4 @@
-import { ButtonInteraction, CommandInteraction, ChatInputCommandInteraction, MessageContextMenuCommandInteraction, UserContextMenuCommandInteraction, GuildMember, Interaction, ModalSubmitInteraction, SelectMenuInteraction, User } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, ChatInputCommandInteraction, MessageContextMenuCommandInteraction, UserContextMenuCommandInteraction, GuildMember, Interaction, ModalSubmitInteraction, SelectMenuInteraction } from 'discord.js';
 import { PermissionUtils } from './permissions';
 
 /**

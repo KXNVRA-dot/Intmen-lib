@@ -1,5 +1,5 @@
 import { TextInputStyle } from 'discord.js';
-import { Modal, ModalHandler } from '../../types';
+import { Modal, ModalHandler, Middleware } from '../../types';
 /**
  * Input component in modal window
  */
@@ -29,6 +29,7 @@ export declare class ModalBuilder {
     private _title;
     private _components;
     private _handler;
+    private _middlewares;
     /**
      * Sets the custom ID for the modal
      * @param customId Unique ID for the modal to handle interactions
@@ -70,6 +71,8 @@ export declare class ModalBuilder {
      * @param handler Handler function called when the modal is submitted
      */
     setHandler(handler: ModalHandler): ModalBuilder;
+    /** Attach one or more middlewares to this modal */
+    use(...middlewares: Middleware[]): ModalBuilder;
     /**
      * Builds and returns the modal object
      * @returns Modal object ready for registration

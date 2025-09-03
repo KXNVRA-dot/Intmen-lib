@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InteractionManager = void 0;
 const discord_js_1 = require("discord.js");
 const types_1 = require("../types");
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const logger_1 = require("../utils/logger");
 const interaction_timeout_1 = require("../utils/interaction-timeout");
+const types_2 = require("../types");
 /**
  * Interaction Manager - the main library class
  * for managing all types of interactions
@@ -23,6 +25,7 @@ class InteractionManager {
             defaultErrorMessage: 'An error occurred while handling the interaction',
             defaultErrorEphemeral: true,
             interactionTimeout: 15000,
+            cooldownMessage: 'Please wait {remaining}s before using this command again.',
             ...options
         };
         this.logger = new logger_1.Logger({
@@ -31,6 +34,8 @@ class InteractionManager {
         });
         this.interactions = new Map();
         this.patterns = new Map();
+        this.cooldowns = new Map();
+        this.globalMiddlewares = this.options.middlewares || [];
         // Initialize the REST client with the provided token
         if (!client.token && !this.options.botToken) {
             this.logger.warn('No token provided - API commands registration will fail. Either the Client must be ready or botToken must be provided in options');
@@ -74,7 +79,8 @@ class InteractionManager {
                 await this.handleAutocompleteInteraction(interaction);
             }
             else {
-                this.logger.warn(`Unsupported interaction type: ${interaction.type}`);
+                // Do not warn for unsupported types in tests; log at debug level instead
+                this.logger.debug(`Unsupported interaction type: ${interaction.type}`);
             }
         }
         catch (error) {
@@ -92,40 +98,70 @@ class InteractionManager {
             this.logger.warn(`Command not found: ${interaction.commandName}`);
             return;
         }
+        // Cooldown handling for commands
+        if (command.cooldown && command.cooldown > 0) {
+            const cooldownMs = command.cooldown;
+            const scope = command.cooldownScope || types_2.CooldownScope.USER;
+            const now = Date.now();
+            const store = this.cooldowns.get(command.id) || new Map();
+            const key = this.getCooldownKey(scope, interaction);
+            const lastUsed = store.get(key) || 0;
+            const remaining = lastUsed + cooldownMs - now;
+            if (remaining > 0) {
+                const msg = (this.options.cooldownMessage || 'Please wait {remaining}s before using this command again.')
+                    .replace('{remaining}', Math.ceil(remaining / 1000).toString());
+                try {
+                    if (!interaction.replied && !interaction.deferred) {
+                        await interaction.reply({ content: msg, ephemeral: true });
+                    }
+                    else if (interaction.deferred && !interaction.replied) {
+                        await interaction.editReply({ content: msg });
+                    }
+                }
+                catch (err) {
+                    this.logger.error('Failed to send cooldown message', err);
+                }
+                return;
+            }
+            store.set(key, now);
+            this.cooldowns.set(command.id, store);
+        }
         try {
             if (command.type === types_1.InteractionType.COMMAND || command.type === types_1.InteractionType.CONTEXT_MENU) {
                 if (command.type === types_1.InteractionType.COMMAND && interaction.isCommand()) {
-                    if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
-                        await (0, interaction_timeout_1.withTimeout)(command.handler(interaction), interaction, {
-                            timeout: this.options.interactionTimeout,
-                            timeoutMessage: 'Command processing timed out',
-                            ephemeral: true
-                        });
-                    }
-                    else {
-                        await command.handler(interaction);
-                    }
+                    await this.runWithMiddlewares(command, interaction, async (ctx) => {
+                        if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
+                            await (0, interaction_timeout_1.withTimeout)(command.handler(ctx), interaction, {
+                                timeout: this.options.interactionTimeout,
+                                timeoutMessage: 'Command processing timed out',
+                                ephemeral: true
+                            });
+                        }
+                        else {
+                            await command.handler(ctx);
+                        }
+                    });
                 }
                 else if (command.type === types_1.InteractionType.CONTEXT_MENU && interaction.isContextMenuCommand()) {
-                    if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
-                        await (0, interaction_timeout_1.withTimeout)(command.handler(interaction), interaction, {
-                            timeout: this.options.interactionTimeout,
-                            timeoutMessage: 'Command processing timed out',
-                            ephemeral: true
-                        });
-                    }
-                    else {
-                        await command.handler(interaction);
-                    }
+                    await this.runWithMiddlewares(command, interaction, async (ctx) => {
+                        if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
+                            await (0, interaction_timeout_1.withTimeout)(command.handler(ctx), interaction, {
+                                timeout: this.options.interactionTimeout,
+                                timeoutMessage: 'Command processing timed out',
+                                ephemeral: true
+                            });
+                        }
+                        else {
+                            await command.handler(ctx);
+                        }
+                    });
                 }
             }
         }
         catch (error) {
             this.logger.error(`Error executing command ${interaction.commandName}`, error);
-            // Handle the error with custom or default response
-            await this.handleInteractionError(interaction, error, {
-                customMessage: `Error executing command ${interaction.commandName}`
-            });
+            // Handle the error with default response
+            await this.handleInteractionError(interaction, error);
         }
     }
     /**
@@ -149,16 +185,18 @@ class InteractionManager {
         }
         try {
             if (button.type === types_1.InteractionType.BUTTON) {
-                if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
-                    await (0, interaction_timeout_1.withTimeout)(button.handler(interaction), interaction, {
-                        timeout: this.options.interactionTimeout,
-                        timeoutMessage: 'Button processing timed out',
-                        ephemeral: true
-                    });
-                }
-                else {
-                    await button.handler(interaction);
-                }
+                await this.runWithMiddlewares(button, interaction, async (ctx) => {
+                    if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
+                        await (0, interaction_timeout_1.withTimeout)(button.handler(ctx), interaction, {
+                            timeout: this.options.interactionTimeout,
+                            timeoutMessage: 'Button processing timed out',
+                            ephemeral: true
+                        });
+                    }
+                    else {
+                        await button.handler(ctx);
+                    }
+                });
             }
         }
         catch (error) {
@@ -190,16 +228,18 @@ class InteractionManager {
         }
         try {
             if (selectMenu.type === types_1.InteractionType.SELECT_MENU) {
-                if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
-                    await (0, interaction_timeout_1.withTimeout)(selectMenu.handler(interaction), interaction, {
-                        timeout: this.options.interactionTimeout,
-                        timeoutMessage: 'Select menu processing timed out',
-                        ephemeral: true
-                    });
-                }
-                else {
-                    await selectMenu.handler(interaction);
-                }
+                await this.runWithMiddlewares(selectMenu, interaction, async (ctx) => {
+                    if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
+                        await (0, interaction_timeout_1.withTimeout)(selectMenu.handler(ctx), interaction, {
+                            timeout: this.options.interactionTimeout,
+                            timeoutMessage: 'Select menu processing timed out',
+                            ephemeral: true
+                        });
+                    }
+                    else {
+                        await selectMenu.handler(ctx);
+                    }
+                });
             }
         }
         catch (error) {
@@ -231,16 +271,18 @@ class InteractionManager {
         }
         try {
             if (modal.type === types_1.InteractionType.MODAL) {
-                if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
-                    await (0, interaction_timeout_1.withTimeout)(modal.handler(interaction), interaction, {
-                        timeout: this.options.interactionTimeout,
-                        timeoutMessage: 'Modal processing timed out',
-                        ephemeral: true
-                    });
-                }
-                else {
-                    await modal.handler(interaction);
-                }
+                await this.runWithMiddlewares(modal, interaction, async (ctx) => {
+                    if (this.options.interactionTimeout && this.options.interactionTimeout > 0) {
+                        await (0, interaction_timeout_1.withTimeout)(modal.handler(ctx), interaction, {
+                            timeout: this.options.interactionTimeout,
+                            timeoutMessage: 'Modal processing timed out',
+                            ephemeral: true
+                        });
+                    }
+                    else {
+                        await modal.handler(ctx);
+                    }
+                });
             }
         }
         catch (error) {
@@ -270,8 +312,9 @@ class InteractionManager {
         }
         try {
             if (autocomplete.type === types_1.InteractionType.AUTOCOMPLETE) {
-                // For autocomplete we don't use timeout as it needs to be fast anyway
-                await autocomplete.handler(interaction);
+                await this.runWithMiddlewares(autocomplete, interaction, async (ctx) => {
+                    await autocomplete.handler(ctx);
+                });
             }
         }
         catch (error) {
@@ -548,6 +591,63 @@ class InteractionManager {
             }
         }
         return errors;
+    }
+    /** Compose and execute middlewares + handler */
+    async runWithMiddlewares(interactionDef, interaction, finalHandler) {
+        const ctx = { interaction, state: new Map(), logger: this.logger, manager: this };
+        // extract params for pattern-based matches using named capture groups
+        const match = this.findPatternMatch(interactionDef, interaction);
+        if (match && match.groups) {
+            ctx.params = { ...match.groups };
+        }
+        const chain = [...this.globalMiddlewares, ...(interactionDef.middlewares || [])];
+        let idx = -1;
+        const dispatch = async (i) => {
+            if (i <= idx)
+                throw new Error('next() called multiple times');
+            idx = i;
+            const mw = chain[i];
+            if (mw) {
+                await mw(ctx, () => dispatch(i + 1));
+            }
+            else {
+                await finalHandler(ctx);
+            }
+        };
+        await dispatch(0);
+    }
+    findPatternMatch(interactionDef, interaction) {
+        // Try to find a matching pattern for buttons/select/modals to extract named groups
+        let id;
+        if (interaction.isButton())
+            id = interaction.customId;
+        else if (interaction.isSelectMenu())
+            id = interaction.customId;
+        else if (interaction.isModalSubmit())
+            id = interaction.customId;
+        if (!id)
+            return null;
+        for (const [pattern, handler] of this.patterns.entries()) {
+            if (handler === interactionDef) {
+                const m = pattern.exec(id);
+                if (m)
+                    return m;
+            }
+        }
+        return null;
+    }
+    getCooldownKey(scope, interaction) {
+        switch (scope) {
+            case types_2.CooldownScope.GUILD:
+                return `${interaction.guildId || 'dm'}`;
+            case types_2.CooldownScope.CHANNEL:
+                return `${interaction.channelId}`;
+            case types_2.CooldownScope.GLOBAL:
+                return `global`;
+            case types_2.CooldownScope.USER:
+            default:
+                return `${interaction.user.id}`;
+        }
     }
 }
 exports.InteractionManager = InteractionManager;

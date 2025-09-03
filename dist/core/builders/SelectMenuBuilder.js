@@ -14,6 +14,7 @@ class SelectMenuBuilder {
         this._disabled = false;
         this._options = [];
         this._handler = null;
+        this._middlewares = [];
     }
     /**
      * Sets the custom ID for the select menu
@@ -79,6 +80,11 @@ class SelectMenuBuilder {
         this._handler = handler;
         return this;
     }
+    /** Attach one or more middlewares to this select menu */
+    use(...middlewares) {
+        this._middlewares.push(...middlewares);
+        return this;
+    }
     /**
      * Builds and returns the select menu object
      * @returns Select menu object ready for registration
@@ -96,7 +102,8 @@ class SelectMenuBuilder {
         return {
             type: types_1.InteractionType.SELECT_MENU,
             id: this._customId,
-            handler: this._handler
+            handler: this._handler,
+            middlewares: this._middlewares
         };
     }
     /**

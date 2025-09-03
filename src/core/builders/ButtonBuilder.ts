@@ -1,4 +1,4 @@
-import { Button, ButtonHandler, ButtonStyle, InteractionType } from '../../types';
+import { Button, ButtonHandler, ButtonStyle, InteractionType, Middleware } from '../../types';
 
 /**
  * Interface representing the Discord API button data
@@ -24,6 +24,7 @@ export class ButtonBuilder {
   private _url?: string;
   private _emoji?: string;
   private _handler: ButtonHandler | null = null;
+  private _middlewares: Middleware[] = [];
 
   /**
    * Sets the custom ID for the button
@@ -88,6 +89,12 @@ export class ButtonBuilder {
     return this;
   }
 
+  /** Attach one or more middlewares to this button */
+  public use(...middlewares: Middleware[]): ButtonBuilder {
+    this._middlewares.push(...middlewares);
+    return this;
+  }
+
   /**
    * Builds and returns the button object
    * @returns Button object ready for registration
@@ -117,7 +124,8 @@ export class ButtonBuilder {
     return {
       type: InteractionType.BUTTON,
       id: this._customId,
-      handler: this._handler
+  handler: this._handler,
+  middlewares: this._middlewares
     };
   }
 

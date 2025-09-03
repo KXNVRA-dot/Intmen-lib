@@ -4,7 +4,7 @@ export { ContextMenuCommandBuilder } from './core/builders/ContextMenuCommandBui
 export { ButtonBuilder } from './core/builders/ButtonBuilder';
 export { SelectMenuBuilder } from './core/builders/SelectMenuBuilder';
 export { ModalBuilder, ModalInputComponent } from './core/builders/ModalBuilder';
-export { Command, CommandHandler, CommandOption, ButtonHandler, ModalHandler, SelectMenuHandler, ErrorResponseOptions, ErrorHandler, InteractionManagerOptions, ButtonStyle, SelectMenuOption, InteractionType } from './types';
+export { Command, InteractionHandler, Middleware, InteractionContext, CommandOption, ButtonHandler, ModalHandler, SelectMenuHandler, ErrorResponseOptions, ErrorHandler, InteractionManagerOptions, ButtonStyle, SelectMenuOption, InteractionType, ContextMenu, Autocomplete, RegisterableInteraction, CooldownScope } from './types';
 export { Logger, LogLevel } from './utils/logger';
 export { createActionRow, createActionRows, createButton, createSelectMenu, createTextInput } from './utils/component-helpers';
 export { withTimeout } from './utils/interaction-timeout';

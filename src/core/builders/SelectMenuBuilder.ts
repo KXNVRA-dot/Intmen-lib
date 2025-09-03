@@ -1,4 +1,4 @@
-import { InteractionType, SelectMenu, SelectMenuHandler, SelectMenuOption } from '../../types';
+import { InteractionType, SelectMenu, SelectMenuHandler, SelectMenuOption, Middleware } from '../../types';
 
 /**
  * Builder for creating select menus
@@ -11,6 +11,7 @@ export class SelectMenuBuilder {
   private _disabled: boolean = false;
   private _options: SelectMenuOption[] = [];
   private _handler: SelectMenuHandler | null = null;
+  private _middlewares: Middleware[] = [];
 
   /**
    * Sets the custom ID for the select menu
@@ -84,6 +85,12 @@ export class SelectMenuBuilder {
     return this;
   }
 
+  /** Attach one or more middlewares to this select menu */
+  public use(...middlewares: Middleware[]): SelectMenuBuilder {
+    this._middlewares.push(...middlewares);
+    return this;
+  }
+
   /**
    * Builds and returns the select menu object
    * @returns Select menu object ready for registration
@@ -104,7 +111,8 @@ export class SelectMenuBuilder {
     return {
       type: InteractionType.SELECT_MENU,
       id: this._customId,
-      handler: this._handler
+  handler: this._handler,
+  middlewares: this._middlewares
     };
   }
 

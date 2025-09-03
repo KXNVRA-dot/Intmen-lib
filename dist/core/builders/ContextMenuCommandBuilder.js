@@ -15,6 +15,9 @@ class ContextMenuCommandBuilder {
         this._defaultMemberPermissions = null;
         this._dmPermission = true;
         this._nsfw = false;
+        this._cooldown = 0;
+        this._cooldownScope = types_1.CooldownScope.USER;
+        this._middlewares = [];
         this._data = {
             name: '',
             type: discord_js_1.ApplicationCommandType.User // Default to user command
@@ -62,6 +65,19 @@ class ContextMenuCommandBuilder {
         return this;
     }
     /**
+     * Sets cooldown duration in milliseconds
+     * @param cooldownMs Cooldown time in ms
+     */
+    setCooldown(cooldownMs) {
+        this._cooldown = cooldownMs;
+        return this;
+    }
+    /** Sets cooldown scope (user/guild/channel/global) */
+    setCooldownScope(scope) {
+        this._cooldownScope = scope;
+        return this;
+    }
+    /**
      * Sets the default member permissions required to use the command (bitfield)
      * @param permissions Permission bit flags
      */
@@ -77,6 +93,11 @@ class ContextMenuCommandBuilder {
         this._handler = handler;
         return this;
     }
+    /** Attach one or more middlewares to this context menu */
+    use(...middlewares) {
+        this._middlewares.push(...middlewares);
+        return this;
+    }
     /**
      * Builds and returns the command object
      * @returns Command object ready for registration
@@ -89,10 +110,13 @@ class ContextMenuCommandBuilder {
             throw new Error('Command handler is required');
         }
         return {
-            type: types_1.InteractionType.COMMAND,
+            type: types_1.InteractionType.CONTEXT_MENU,
             id: this._data.name,
             data: this._data,
-            handler: this._handler
+            handler: this._handler,
+            cooldown: this._cooldown,
+            cooldownScope: this._cooldownScope,
+            middlewares: this._middlewares
         };
     }
 }

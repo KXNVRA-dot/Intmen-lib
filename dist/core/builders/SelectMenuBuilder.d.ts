@@ -1,4 +1,4 @@
-import { SelectMenu, SelectMenuHandler, SelectMenuOption } from '../../types';
+import { SelectMenu, SelectMenuHandler, SelectMenuOption, Middleware } from '../../types';
 /**
  * Builder for creating select menus
  */
@@ -10,6 +10,7 @@ export declare class SelectMenuBuilder {
     private _disabled;
     private _options;
     private _handler;
+    private _middlewares;
     /**
      * Sets the custom ID for the select menu
      * @param customId Unique ID for the menu to handle interactions
@@ -50,6 +51,8 @@ export declare class SelectMenuBuilder {
      * @param handler Handler function called when an option is selected
      */
     setHandler(handler: SelectMenuHandler): SelectMenuBuilder;
+    /** Attach one or more middlewares to this select menu */
+    use(...middlewares: Middleware[]): SelectMenuBuilder;
     /**
      * Builds and returns the select menu object
      * @returns Select menu object ready for registration

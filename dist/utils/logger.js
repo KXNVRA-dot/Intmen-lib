@@ -34,24 +34,36 @@ var LogColor;
  */
 class Logger {
     /**
-     * Creates a new logger instance
-     * @param options Logger options or prefix string
+     * Creates a new logger instance.
+     *
+     * The constructor supports both the original two argument form
+     * `new Logger(prefix, debug)` and the newer options object form
+     * `new Logger({ prefix, level })`.
+     *
+     * @param optionsOrPrefix Options object or prefix string
+     * @param debug Whether debug logging should be enabled (only for prefix form)
      */
-    constructor(options = {}) {
-        // Handle string as prefix (for backward compatibility)
-        if (typeof options === 'string') {
-            this.prefix = options;
-            this.level = LogLevel.INFO;
-            this.useColors = true;
-            this.timestamps = true;
+    constructor(optionsOrPrefix = {}, debug = false) {
+        // Handle legacy signature where a prefix and optional debug flag are provided
+        if (typeof optionsOrPrefix === 'string') {
+            this.prefix = optionsOrPrefix;
+            this.level = debug ? LogLevel.DEBUG : LogLevel.INFO;
+            // Default to no color codes for predictable output in tests and logs
+            this.useColors = false;
+            // Default to no timestamps unless explicitly enabled to keep output predictable in tests
+            this.timestamps = false;
+            return;
         }
-        else {
-            this.prefix = options.prefix || 'Intmen-lib';
-            this.level = options.level !== undefined ? options.level :
-                (options.level === LogLevel.DEBUG ? LogLevel.DEBUG : LogLevel.INFO);
-            this.useColors = options.useColors !== undefined ? options.useColors : true;
-            this.timestamps = options.timestamps !== undefined ? options.timestamps : true;
-        }
+        // Handle options object
+        const options = optionsOrPrefix;
+        this.prefix = options.prefix || 'Intmen-lib';
+        this.level =
+            options.level !== undefined
+                ? options.level
+                : LogLevel.INFO;
+        this.useColors = options.useColors !== undefined ? options.useColors : false;
+        // Default timestamps to false unless explicitly requested
+        this.timestamps = options.timestamps !== undefined ? options.timestamps : false;
     }
     /**
      * Creates a timestamp string
@@ -110,14 +122,8 @@ class Logger {
         if (this.level <= LogLevel.ERROR) {
             console.error(this.formatMessage('ERROR', LogColor.RED, message));
             if (error !== undefined) {
-                if (error instanceof Error) {
-                    console.error(`${error.name}: ${error.message}`);
-                    if (error.stack)
-                        console.error(error.stack);
-                }
-                else {
-                    console.error(error);
-                }
+                // Log the error object directly for clearer debugging and predictable tests
+                console.error(error);
             }
         }
     }

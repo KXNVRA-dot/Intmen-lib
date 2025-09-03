@@ -1,4 +1,4 @@
-import { Button, ButtonHandler, ButtonStyle } from '../../types';
+import { Button, ButtonHandler, ButtonStyle, Middleware } from '../../types';
 /**
  * Interface representing the Discord API button data
  */
@@ -24,6 +24,7 @@ export declare class ButtonBuilder {
     private _url?;
     private _emoji?;
     private _handler;
+    private _middlewares;
     /**
      * Sets the custom ID for the button
      * @param customId Unique ID for the button to handle interactions
@@ -59,6 +60,8 @@ export declare class ButtonBuilder {
      * @param handler Handler function called when the button is clicked
      */
     setHandler(handler: ButtonHandler): ButtonBuilder;
+    /** Attach one or more middlewares to this button */
+    use(...middlewares: Middleware[]): ButtonBuilder;
     /**
      * Builds and returns the button object
      * @returns Button object ready for registration

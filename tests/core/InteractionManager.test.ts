@@ -194,8 +194,8 @@ describe('InteractionManager', () => {
       
       await manager['handleInteraction'](mockInteraction as Interaction);
       
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith(mockInteraction);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(handler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockInteraction }));
     });
     
     it('should handle button interactions', async () => {
@@ -222,8 +222,8 @@ describe('InteractionManager', () => {
       
       await manager['handleInteraction'](mockInteraction as Interaction);
       
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith(mockInteraction);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(handler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockInteraction }));
     });
     
     it('should handle select menu interactions', async () => {
@@ -250,8 +250,8 @@ describe('InteractionManager', () => {
       
       await manager['handleInteraction'](mockInteraction as Interaction);
       
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith(mockInteraction);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(handler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockInteraction }));
     });
     
     it('should handle modal interactions', async () => {
@@ -278,8 +278,8 @@ describe('InteractionManager', () => {
       
       await manager['handleInteraction'](mockInteraction as Interaction);
       
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith(mockInteraction);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(handler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockInteraction }));
     });
     
     it('should handle unknown interactions gracefully', async () => {
@@ -533,8 +533,8 @@ describe('InteractionManager', () => {
       
       await manager['handleInteraction'](mockInteraction as Interaction);
       
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith(mockInteraction);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(handler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockInteraction }));
     });
     
     it('should register and handle autocomplete interactions', async () => {
@@ -563,8 +563,8 @@ describe('InteractionManager', () => {
       
       await manager['handleInteraction'](mockInteraction as Interaction);
       
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith(mockInteraction);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(handler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockInteraction }));
     });
     
     it('should handle error during autocomplete interaction', async () => {

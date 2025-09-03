@@ -1,4 +1,4 @@
-import { Command, CommandHandler } from '../../types';
+import { ContextMenu, InteractionHandler, CooldownScope, Middleware } from '../../types';
 /**
  * Builder for creating context menu commands (user and message commands)
  */
@@ -8,6 +8,9 @@ export declare class ContextMenuCommandBuilder {
     private readonly _defaultMemberPermissions;
     private readonly _dmPermission;
     private readonly _nsfw;
+    private _cooldown;
+    private _cooldownScope;
+    private _middlewares;
     /**
      * Creates a new context menu command builder instance
      */
@@ -36,6 +39,13 @@ export declare class ContextMenuCommandBuilder {
      */
     setNSFW(nsfw: boolean): ContextMenuCommandBuilder;
     /**
+     * Sets cooldown duration in milliseconds
+     * @param cooldownMs Cooldown time in ms
+     */
+    setCooldown(cooldownMs: number): ContextMenuCommandBuilder;
+    /** Sets cooldown scope (user/guild/channel/global) */
+    setCooldownScope(scope: CooldownScope): ContextMenuCommandBuilder;
+    /**
      * Sets the default member permissions required to use the command (bitfield)
      * @param permissions Permission bit flags
      */
@@ -44,10 +54,12 @@ export declare class ContextMenuCommandBuilder {
      * Sets the command handler
      * @param handler Handler function called when the command is used
      */
-    setHandler(handler: CommandHandler): ContextMenuCommandBuilder;
+    setHandler(handler: InteractionHandler): ContextMenuCommandBuilder;
+    /** Attach one or more middlewares to this context menu */
+    use(...middlewares: Middleware[]): ContextMenuCommandBuilder;
     /**
      * Builds and returns the command object
      * @returns Command object ready for registration
      */
-    build(): Command;
+    build(): ContextMenu;
 }

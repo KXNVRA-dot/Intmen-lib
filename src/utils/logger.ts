@@ -64,8 +64,10 @@ export class Logger {
     if (typeof optionsOrPrefix === 'string') {
       this.prefix = optionsOrPrefix;
       this.level = debug ? LogLevel.DEBUG : LogLevel.INFO;
-      this.useColors = true;
-      this.timestamps = true;
+  // Default to no color codes for predictable output in tests and logs
+  this.useColors = false;
+      // Default to no timestamps unless explicitly enabled to keep output predictable in tests
+      this.timestamps = false;
       return;
     }
 
@@ -76,8 +78,9 @@ export class Logger {
       options.level !== undefined
         ? options.level
         : LogLevel.INFO;
-    this.useColors = options.useColors !== undefined ? options.useColors : true;
-    this.timestamps = options.timestamps !== undefined ? options.timestamps : true;
+  this.useColors = options.useColors !== undefined ? options.useColors : false;
+    // Default timestamps to false unless explicitly requested
+    this.timestamps = options.timestamps !== undefined ? options.timestamps : false;
   }
 
   /**
@@ -113,7 +116,7 @@ export class Logger {
    * @param message Message to display
    * @param data Additional data to log
    */
-  public info(message: string, data?: any): void {
+  public info(message: string, data?: unknown): void {
     if (this.level <= LogLevel.INFO) {
       console.log(this.formatMessage('INFO', LogColor.GREEN, message));
       if (data !== undefined) console.log(data);
@@ -125,7 +128,7 @@ export class Logger {
    * @param message Warning message
    * @param data Additional data to log
    */
-  public warn(message: string, data?: any): void {
+  public warn(message: string, data?: unknown): void {
     if (this.level <= LogLevel.WARN) {
       console.warn(this.formatMessage('WARN', LogColor.YELLOW, message));
       if (data !== undefined) console.warn(data);
@@ -141,12 +144,8 @@ export class Logger {
     if (this.level <= LogLevel.ERROR) {
       console.error(this.formatMessage('ERROR', LogColor.RED, message));
       if (error !== undefined) {
-        if (error instanceof Error) {
-          console.error(`${error.name}: ${error.message}`);
-          if (error.stack) console.error(error.stack);
-        } else {
-          console.error(error);
-        }
+        // Log the error object directly for clearer debugging and predictable tests
+        console.error(error);
       }
     }
   }
@@ -156,7 +155,7 @@ export class Logger {
    * @param message Debug message
    * @param data Additional data to log
    */
-  public debug(message: string, data?: any): void {
+  public debug(message: string, data?: unknown): void {
     if (this.level <= LogLevel.DEBUG) {
       console.debug(this.formatMessage('DEBUG', LogColor.GRAY, message));
       if (data !== undefined) console.debug(data);

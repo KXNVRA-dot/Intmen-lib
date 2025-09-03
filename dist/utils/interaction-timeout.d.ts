@@ -31,7 +31,7 @@ export declare function canReply(interaction: Interaction): boolean;
  * @param options Timeout options
  * @returns Promise resolving with the original promise result
  */
-export declare function withTimeout<T, I>(promise: Promise<T>, interaction: I, options: TimeoutOptions): Promise<T>;
+export declare function withTimeout<T>(promise: Promise<T>, interaction: unknown, options: TimeoutOptions): Promise<T>;
 /**
  * Wraps an interaction handler with timeout protection
  * @param handler The interaction handler function

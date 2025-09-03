@@ -11,6 +11,8 @@ export declare class InteractionManager {
     private readonly interactions;
     private readonly rest;
     private readonly patterns;
+    private readonly cooldowns;
+    private readonly globalMiddlewares;
     /**
      * Creates a new interaction manager instance
      * @param client Discord.js client
@@ -154,4 +156,8 @@ export declare class InteractionManager {
      * @returns Array of validation error messages
      */
     private validateCommandOptions;
+    /** Compose and execute middlewares + handler */
+    private runWithMiddlewares;
+    private findPatternMatch;
+    private getCooldownKey;
 }

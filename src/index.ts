@@ -14,7 +14,9 @@ export {
 // Types
 export {
   Command,
-  CommandHandler,
+  InteractionHandler,
+  Middleware,
+  InteractionContext,
   CommandOption,
   ButtonHandler,
   ModalHandler,
@@ -24,7 +26,11 @@ export {
   InteractionManagerOptions,
   ButtonStyle,
   SelectMenuOption,
-  InteractionType
+  InteractionType,
+  ContextMenu,
+  Autocomplete,
+  RegisterableInteraction,
+  CooldownScope
 } from './types';
 
 // Utilities

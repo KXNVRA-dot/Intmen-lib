@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ButtonStyle = exports.InteractionType = void 0;
+exports.CooldownScope = exports.ButtonStyle = exports.InteractionType = void 0;
 /**
  * Interaction types
  */
@@ -24,3 +24,13 @@ var ButtonStyle;
     ButtonStyle[ButtonStyle["DANGER"] = 4] = "DANGER";
     ButtonStyle[ButtonStyle["LINK"] = 5] = "LINK";
 })(ButtonStyle || (exports.ButtonStyle = ButtonStyle = {}));
+/**
+ * Scope for applying cooldowns
+ */
+var CooldownScope;
+(function (CooldownScope) {
+    CooldownScope["USER"] = "user";
+    CooldownScope["GUILD"] = "guild";
+    CooldownScope["CHANNEL"] = "channel";
+    CooldownScope["GLOBAL"] = "global";
+})(CooldownScope || (exports.CooldownScope = CooldownScope = {}));

@@ -56,8 +56,8 @@ describe('Integration tests: Basic Interactions', () => {
     
     await manager['handleInteraction'](mockCommandInteraction as any);
     
-    expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith(mockCommandInteraction);
+  expect(commandHandler).toHaveBeenCalledTimes(1);
+  expect(commandHandler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockCommandInteraction }));
     
     const mockButtonInteraction = {
       isCommand: () => false,
@@ -72,8 +72,8 @@ describe('Integration tests: Basic Interactions', () => {
     
     await manager['handleInteraction'](mockButtonInteraction as any);
     
-    expect(buttonHandler).toHaveBeenCalledTimes(1);
-    expect(buttonHandler).toHaveBeenCalledWith(mockButtonInteraction);
+  expect(buttonHandler).toHaveBeenCalledTimes(1);
+  expect(buttonHandler).toHaveBeenCalledWith(expect.objectContaining({ interaction: mockButtonInteraction }));
     expect(buttonInteractionReceived).toBe(true);
   });
   

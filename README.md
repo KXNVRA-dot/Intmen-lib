@@ -3,31 +3,29 @@
 <div align="center">
 
 ![Intmen-lib](https://img.shields.io/badge/Intmen-lib-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-[![npm version](https://img.shields.io/badge/npm-1.2.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
+[![npm version](https://img.shields.io/badge/npm-2.0.0-blue?style=flat-square)](https://www.npmjs.com/package/intmen-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-blue?style=flat-square)](https://discord.js.org)
-[![Test Coverage](https://img.shields.io/badge/coverage-93%25-green?style=flat-square)](https://github.com/KXNVRA-dot/Intmen-lib)
 
 A specialized library for managing interactive elements of Discord bots, including slash commands, buttons, select menus, modals, context menus, and autocomplete interactions.
 
 </div>
 
-> 🚀 **NEW VERSION 1.2.0 AVAILABLE**: Now includes built-in command cooldowns alongside enhanced error handling and utility classes. This version is stable and recommended for production use.
+> 🚀 **NEW MAJOR VERSION 2.0.0**: Context-based handlers, first-class middleware, expanded cooldown scopes, and pattern-based ID matching with named params. This is a breaking release—see Migration.
 
 ## ✨ Features
 
-- 🚀 **Simple API** - Intuitive interface for managing Discord interactions
-- 🔒 **Type-Safe** - Built with TypeScript for robust type checking and strict typing
-- 📦 **Complete** - Supports all Discord interaction types: slash commands, context menus, buttons, select menus, modals, and autocomplete
-- 🧩 **Modular** - Flexible architecture for clean code organization
-- ⚡ **Builder Pattern** - Fluent builders for easy creation of interactive elements
-- 🛡️ **Error Handling** - Comprehensive error management with proper typing
-- 🧪 **Fully Tested** - High test coverage (>93%) for reliability
-- 📘 **Well Documented** - Clear and concise documentation
-- 🔑 **Permission Utilities** - Simplify Discord permission checks with built-in utilities
-- ✅ **Validation** - Robust interaction validation with fluent API
-- ⏱️ **Cooldowns** - Built-in per-user command cooldown support
+- 🚀 Simple API – Intuitive interface for managing Discord interactions
+- 🔒 Type-Safe – Built with TypeScript
+- 📦 Complete – Slash commands, context menus, buttons, select menus, modals, autocomplete
+- 🧩 Modular – Clean builder-based architecture
+- 🧭 New: Context-based handlers – Access interaction, logger, manager, state, params via a single context object
+- 🧵 New: Middleware – Global and per-interaction middleware chains with next()
+- ⏱️ New: Cooldown scopes – user, guild, channel, global
+- � New: Pattern matching – Register handlers by RegExp and use named capture groups as params
+- �️ Error handling – Customizable error responses with timeouts
+- 🔑 Permission utilities – Simple permission checks
 
 ## 📥 Installation
 
@@ -54,13 +52,19 @@ const client = new Client({
 });
 
 // Create interaction manager
-const manager = new InteractionManager(client);
+// Optional global middlewares
+const auth = async (ctx, next) => {
+  // authorize or short-circuit
+  await next();
+};
+
+const manager = new InteractionManager(client, { middlewares: [auth] });
 
 // Register slash command
 const pingCommand = new SlashCommandBuilder()
   .setName('ping')
   .setDescription('Check bot latency')
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction, logger }) => {
     const sent = await interaction.reply({ 
       content: '📡 Pinging...', 
       fetchReply: true 
@@ -84,6 +88,14 @@ client.login('YOUR_TOKEN_HERE');
 ```
 
 ## 📖 Documentation
+
+### New in v2.0.0
+
+- Context-based handler signature: handlers receive a single object `{ interaction, state, params, logger, manager }`
+- Middleware pipeline: global (manager options) and per-interaction via `.use(...)`
+- Cooldown scopes for commands and context menus: user, guild, channel, global
+- Pattern-based component IDs with named params available in `ctx.params`
+- Improved default error responses and timeouts
 
 ### New in v1.1.0
 
@@ -110,9 +122,15 @@ const userCommand = new SlashCommandBuilder()
       .setDescription('Target user')
       .setRequired(true)
   )
-  .setHandler(async (interaction) => {
+  .use(async (ctx, next) => {
+    // per-command middleware example
+    ctx.state.set('start', Date.now());
+    await next();
+  })
+  .setHandler(async ({ interaction, state, logger }) => {
     const user = interaction.options.getUser('target');
-    await interaction.reply(`Username: ${user.username}`);
+    logger?.debug('Handling user command');
+    await interaction.reply(`Username: ${user.username} (took ${Date.now() - state.get('start')}ms)`);
   });
 
 manager.registerCommand(userCommand.build());
@@ -147,7 +165,7 @@ const settingsCommand = new SlashCommandBuilder()
           .setRequired(true)
       )
   )
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const subcommand = interaction.options.getSubcommand();
     
     if (subcommand === 'view') {
@@ -171,7 +189,7 @@ import { ContextMenuCommandBuilder } from 'intmen-lib';
 const userInfoContextMenu = new ContextMenuCommandBuilder()
   .setName('User Info')
   .setUserContextMenu()
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const user = interaction.targetUser;
     await interaction.reply({
       content: `Information about ${user.username}`,
@@ -185,7 +203,7 @@ manager.registerCommand(userInfoContextMenu.build());
 const translateContextMenu = new ContextMenuCommandBuilder()
   .setName('Translate Message')
   .setMessageContextMenu()
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const message = interaction.targetMessage;
     await interaction.reply({
       content: `Translating: ${message.content.slice(0, 100)}...`,
@@ -207,7 +225,8 @@ const button = new ButtonBuilder()
   .setLabel('Confirm')
   .setStyle(ButtonStyle.SUCCESS)
   .setEmoji('✅')
-  .setHandler(async (interaction) => {
+  .use(async (ctx, next) => { /* check something */ await next(); })
+  .setHandler(async ({ interaction, params }) => {
     await interaction.reply({ 
       content: 'Action confirmed!', 
       ephemeral: true 
@@ -249,7 +268,7 @@ const roleMenu = new SelectMenuBuilder()
     description: 'UI/UX designer',
     emoji: '🎨'
   })
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const roles = interaction.values;
     await interaction.reply({
       content: `You selected: ${roles.join(', ')}`,
@@ -284,7 +303,7 @@ const feedbackModal = new ModalBuilder()
     minLength: 10,
     maxLength: 1000
   })
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     const name = interaction.fields.getTextInputValue('feedback_name');
     const feedback = interaction.fields.getTextInputValue('feedback_content');
     
@@ -302,7 +321,33 @@ manager.registerModal(feedbackModal.build());
 await interaction.showModal(feedbackModal.toJSON());
 ```
 
-### New Utilities in v1.1.0
+### Middlewares and Cooldowns
+
+Per-command cooldown with scope:
+
+```typescript
+import { CooldownScope } from 'intmen-lib';
+
+const cmd = new SlashCommandBuilder()
+  .setName('cool')
+  .setDescription('Cooldown demo')
+  .setCooldown(5000)
+  .setCooldownScope(CooldownScope.GUILD)
+  .setHandler(async ({ interaction }) => interaction.reply('OK'));
+```
+
+Per-interaction middleware:
+
+```typescript
+const restricted = new ButtonBuilder()
+  .setCustomId('restricted')
+  .use(async (ctx, next) => {
+    if (ctx.interaction.user.id !== 'owner') return ctx.interaction.reply({ content: 'Nope', ephemeral: true });
+    await next();
+  })
+  .setLabel('Owner Only')
+  .setHandler(async ({ interaction }) => interaction.reply('Welcome, owner!'));
+```
 
 #### Permission Utilities
 
@@ -371,13 +416,13 @@ if (isValid) {
 import { withTimeout } from 'intmen-lib';
 
 // Automatically timeout a long-running operation
-const result = await withTimeout(
+await withTimeout(
   someAsyncOperation(), // Promise that might take too long
-  5000, // Timeout in ms (5 seconds)
-  () => {
-    // Optional callback when timeout occurs
-    console.log('Operation timed out');
-    return 'Fallback value';
+  interaction, // the related Discord.js interaction
+  {
+    timeout: 5000,
+    timeoutMessage: 'Operation timed out',
+    ephemeral: true
   }
 );
 
@@ -385,19 +430,19 @@ const result = await withTimeout(
 const command = new SlashCommandBuilder()
   .setName('search')
   .setDescription('Search for something')
-  .setHandler(async (interaction) => {
+  .setHandler(async ({ interaction }) => {
     // Defer the reply first
     await interaction.deferReply();
     
     try {
       // Wrap the long operation with timeout
-      const result = await withTimeout(
+      await withTimeout(
         performLongSearch(interaction.options.getString('query')),
-        10000, // 10 seconds
-        async () => {
-          // This runs if the operation times out
-          await interaction.editReply('The search operation timed out!');
-          return null; // Return a fallback value
+        interaction,
+        {
+          timeout: 10000,
+          timeoutMessage: 'The search operation timed out!',
+          ephemeral: true
         }
       );
       
@@ -426,24 +471,14 @@ Distributed under the [MIT License](https://opensource.org/licenses/MIT). See `L
 
 ## 🔄 Changelog
 
-### v1.1.0
+### v2.0.0
 
-- Added support for subcommands and subcommand groups
-- Created new ContextMenuCommandBuilder for easier context menu commands
-- Added PermissionUtils for managing Discord permissions
-- Added InteractionValidators for interaction validation
-- Enhanced error handling with customizable error responses
-- Improved timeout handling for long-running operations
-- Added extensive documentation
+- BREAKING: Handlers now receive a context object `{ interaction, state, params, logger, manager }`
+- New: Global and per-interaction middlewares with `next()`
+- New: Cooldown scopes (user, guild, channel, global)
+- New: Pattern-based component IDs with `ctx.params`
+- Improved: Error handling defaults and timeouts
 
-### v1.0.4
+### v1.2.0
 
-- Fixed critical issues with interaction handling
-- Enhanced type safety for TypeScript users
-- Improved error handling
-
-### v1.0.3
-
-- Initial stable release
-- Core interaction management functionality
-- Basic builders for all interaction types
+- Command cooldowns, error handling improvements

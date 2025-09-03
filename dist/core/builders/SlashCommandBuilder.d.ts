@@ -1,5 +1,5 @@
 import { APIApplicationCommandSubcommandOption, APIApplicationCommandSubcommandGroupOption } from 'discord.js';
-import { Command, CommandHandler, CommandOption } from '../../types';
+import { Command, CommandOption, InteractionHandler, CooldownScope, Middleware } from '../../types';
 /**
  * Builder for creating slash commands
  */
@@ -9,6 +9,9 @@ export declare class SlashCommandBuilder {
     private readonly _defaultMemberPermissions;
     private readonly _dmPermission;
     private readonly _nsfw;
+    private _cooldown;
+    private _cooldownScope;
+    private _middlewares;
     /**
      * Creates a new slash command builder instance
      */
@@ -99,10 +102,19 @@ export declare class SlashCommandBuilder {
      */
     private validateOption;
     /**
+     * Sets cooldown duration in milliseconds
+     * @param cooldownMs Cooldown time in ms
+     */
+    setCooldown(cooldownMs: number): SlashCommandBuilder;
+    /** Sets cooldown scope (user/guild/channel/global) */
+    setCooldownScope(scope: CooldownScope): SlashCommandBuilder;
+    /**
      * Sets the command handler
      * @param handler Handler function called when the command is used
      */
-    setHandler(handler: CommandHandler): SlashCommandBuilder;
+    setHandler(handler: InteractionHandler): SlashCommandBuilder;
+    /** Attach one or more middlewares to this command */
+    use(...middlewares: Middleware[]): SlashCommandBuilder;
     /**
      * Builds and returns the command object
      * @returns Command object ready for registration

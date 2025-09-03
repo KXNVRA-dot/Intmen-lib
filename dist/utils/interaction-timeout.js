@@ -55,9 +55,10 @@ function canReply(interaction) {
  */
 async function withTimeout(promise, interaction, options) {
     const { timeout, timeoutMessage, ephemeral = true, onTimeout } = options;
-    // Create a timeout promise
+    // Create a timeout promise and keep track of the timer so we can clear it
+    let timeoutId;
     const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
             reject(new InteractionTimeoutError(interaction, timeout));
         }, timeout);
     });
@@ -95,6 +96,10 @@ async function withTimeout(promise, interaction, options) {
             throw error; // Re-throw the timeout error for the caller to handle
         }
         throw error; // Re-throw other errors
+    }
+    finally {
+        if (timeoutId)
+            clearTimeout(timeoutId);
     }
 }
 /**
